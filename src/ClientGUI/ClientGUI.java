@@ -4,14 +4,15 @@ import javax.swing.*;
 
 public class ClientGUI {
     private JLabel clientId;
-    private JTextField LBPort;
     private JButton connectButton;
     private JPanel LBConnectPanel;
     private JPanel RequestPanel;
     private JSpinner nRequests;
     private JButton requestButton;
-    private JTable requestsTable;
+    private JTable pendingRequestsTable;
     private JSpinner NI;
     private JSpinner deadline;
-    private JTable repliesTable;
+    private JTable processedRequestsTable;
+    private JButton endConnectionToLoadButton;
+    private JComboBox comboBox1;
 }
