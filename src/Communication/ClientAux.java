@@ -38,6 +38,7 @@ public class ClientAux extends Thread {
             e.printStackTrace();
         }
     }
+    
     public void sendMsg(Message msg) {
         try {
             out.writeObject(msg);

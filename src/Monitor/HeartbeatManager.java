@@ -7,8 +7,9 @@ public class HeartbeatManager extends  Thread {
     private final ClientAux clientAux;
     private final int HEATBEAT_TIMEOUT = 1000;
     private final int serviceId; //Id of the Service to be monitored through Heartbeat
-    private  final  Monitor monitor;
-    public HeartbeatManager(String hostname, int port, int serviceId, Monitor monitor){
+    private  final IMonitor_Heartbeat monitor;
+
+    public HeartbeatManager(String hostname, int port, int serviceId, IMonitor_Heartbeat monitor){
         this.clientAux = new ClientAux(hostname,port);
         this.serviceId = serviceId;
         this.monitor = monitor;
