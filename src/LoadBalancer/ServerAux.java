@@ -1,5 +1,4 @@
 package LoadBalancer;
-package Communication;
 
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -9,15 +8,16 @@ import java.net.Socket;
 
 public class ServerAux {
 
-    private final int port;
+    private int port;
     private ServerSocket serverSocket;
+    private final LoadBalancer lb;
 
 
-    public ServerAux(int port) {
-        this.port = port;
+    public ServerAux(LoadBalancer lb) {
+        this.lb = lb;
     }
 
-    public void start() {
+    public void start(int port) {
         try {
             serverSocket = new ServerSocket(port);
 

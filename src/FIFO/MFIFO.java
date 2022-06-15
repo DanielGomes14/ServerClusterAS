@@ -1,19 +1,17 @@
 package FIFO;
 
-package FIFO;
+import Communication.Message;
 
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 
-import Communication.Record;
-
-public class MFIFO implements IFIFO_Client, IFIFO_Source {
+public class MFIFO {
     private int idxPut = 0;
     private int idxGet = 0;
     private int count = 0;
 
-    private final Record fifo[];
+    private final Message fifo[];
     private final int size;
     private final ReentrantLock rl;
     private final Condition cNotFull;
@@ -23,13 +21,13 @@ public class MFIFO implements IFIFO_Client, IFIFO_Source {
 
     public MFIFO(int size) {
         this.size = size;
-        this.fifo = new Record[ size ];
+        this.fifo = new Message[ size ];
         this.rl = new ReentrantLock();
         this.cNotEmpty = rl.newCondition();
         this.cNotFull = rl.newCondition();
     }
 
-    public void put(Record record) {
+    public void put(Message record) {
         try {
             rl.lock();
             while ( isFull() )
@@ -38,42 +36,27 @@ public class MFIFO implements IFIFO_Client, IFIFO_Source {
             idxPut = (++idxPut) % size;
             count++;
             cNotEmpty.signal();
-        } catch ( InterruptedException ex ) {}
+        } catch ( InterruptedException ignored) {}
         finally {
             rl.unlock();
         }
     }
 
-    public Record get() {
+    public Message get() {
         try{
             rl.lock();
-            try {
-                while ( isEmpty() ) {
-                    if (!recordsAvailable)
-                        return new Record(-1, -1.0, -1);
-                    cNotEmpty.await();
-                }
-            } catch( InterruptedException ex ) {}
+            while ( isEmpty() )
+                cNotEmpty.await();
             idxGet = idxGet % size;
             count --;
             cNotFull.signal();
             return fifo[idxGet++];
-        }
-        finally {
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } finally {
             rl.unlock();
         }
-    }
-
-
-    public void finishedReadingRecords() {
-        try {
-            rl.lock();
-            recordsAvailable = false;
-            cNotEmpty.signalAll();
-        }
-        finally {
-            rl.unlock();
-        }
+        return null;
     }
 
     public boolean isFull() {

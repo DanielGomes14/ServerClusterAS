@@ -3,7 +3,6 @@ package Monitor;
 import Communication.ClientAux;
 import Communication.Message;
 import Communication.ServerAux;
-import Communication.TClientHandler;
 import Server.ServerInfo;
 
 import java.util.ArrayList;
@@ -12,35 +11,34 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 
-public class Monitor extends  Thread implements IMonitor, IMonitor_Heartbeat{
+public class Monitor implements IMonitor, IMonitor_Heartbeat{
 
     /** Server Information */
     private final Map<Integer, ServerInfo> servers;
 
     /** Requests waiting to be assigned to a server. */
-    private final Map<Integer, List<Message> pendingRequests;
-    private final String hostname;
-    private final int port;
+    private final Map<Integer, List<Message>> pendingRequests;
+    private final String hostname = "localhost";
+    private final int port = 9000;
     private final ServerAux serverAux;
     private final Map<Integer, HeartbeatManager> heartbeatThreads;
     private final ReentrantLock rl;
     private int serverCount;
     private int lbCount;
     private int clientCount;
-    private ClientAux primaryLB;
+    private List<ClientAux> LBs;
 
-    public Monitor(String hostname, int port) {
-        this.servers = new HashMap<Integer, ServerInfo>() ;
+    public Monitor() {
         this.rl = new ReentrantLock();
-        this.hostname = hostname;
-        this.port = port;
-        this.pendingRequests = new HashMap<Integer, new ArrayList<Message>() ;
-        this.heartbeatThreads = new HashMap<Integer,HeartbeatManager>();
-        this.serverAux = new ServerAux(port);
+        this.servers = new HashMap<>();
+        this.pendingRequests = new HashMap<>();
+        this.heartbeatThreads = new HashMap<>();
+        this.serverAux = new ServerAux();
+        this.LBs = new ArrayList<>();
     }
 
-    public void run() {
-        this.serverAux.start();
+    public void start() {
+        this.serverAux.start(port);
     }
 
     public void registerNewServer(ServerInfo serverInfo) {
@@ -70,23 +68,24 @@ public class Monitor extends  Thread implements IMonitor, IMonitor_Heartbeat{
 
         this.rl.unlock();
 
-        // init connection with primary lb if it doesn't exist
-        this.primaryLB = new ClientAux();
-
-        // else add to list of secondary lb
-        secondaries.add((id, port, host));
+        this.LBs.add(new ClientAux(this.hostname, port));
     }
 
     public void serverDown(int serverId){
         this.rl.lock();
+
         servers.remove(serverId);
-        pendingRequests = pendingRequests.remove(serverId);
+        List<Message> pendingRequests = this.pendingRequests.remove(serverId);
         heartbeatThreads.remove(serverId);
+
         this.rl.unlock();
+
         // add pending requests to message
         // send message to loadbalancer
-        Message msg = new Message(pendingRequests);
-        primaryLB.sendMsg(msg);
+        Message msg = new Message();
+        ClientAux primaryLb = this.LBs.get(0);
+        if (primaryLb != null)
+            primaryLb.sendMsg(msg);
     }
     
     public void registerNewClient(Message msg) {
@@ -95,19 +94,33 @@ public class Monitor extends  Thread implements IMonitor, IMonitor_Heartbeat{
         int id = this.clientCount++;
         
         // store client info such as ports and put in the GUI
-        this.clients.put()
+//        this.clients.put();
 
         this.rl.unlock();
     }
 
-    public void requestAck(Message msg){
-        this.r1.lock();
+    public void requestProcessed(Message msg){
+        this.rl.lock();
 
-        this.r1.unlock();
+        this.rl.unlock();
     }
 
 
     public void registerLoadBalancer() {
+        this.rl.lock();
 
+        int id = this.clientCount++;
+
+        // add this lb id to the list, maybe create a loadbalancersinfo class aswell
+        // with id and ClientAux connection
+        // but here only add the id
+//        this.LBs.add();
+
+        this.rl.unlock();
     }
+
+    public static void main(String[] args) {
+        new Monitor();
+    }
+
 }

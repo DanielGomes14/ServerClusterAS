@@ -1,7 +1,7 @@
-package Client;
+package Server;
 
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import Client.TClientHandler;
+
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -17,7 +17,7 @@ public class ServerAux {
     public ServerAux() {
     }
 
-    public void start(int port) {
+    public void start() {
         try {
             serverSocket = new ServerSocket();
             this.port = serverSocket.getLocalPort();

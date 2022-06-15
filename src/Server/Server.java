@@ -1,63 +1,58 @@
 package Server;
 
-import ServerGUI.ServerGUI;
-
-import javax.swing.*;
-
 import Client.ServerAux;
+import Communication.ClientAux;
 import Communication.Message;
-
-import java.awt.*;
-import java.lang.reflect.InvocationTargetException;
+import FIFO.MFIFO;
 
 public class Server {
-    private final ClientGUI gui;
-    private final EventQueue queue;
+    private final ServerGUI gui;
     private final ServerAux server;
-    private final String hostname;
-    private final int port;
+    private int port;
+    private ClientAux monitorCon;
+    private final int monitorPort = 9000;
+    private final MFIFO mFifo;
+    private final String hostname = "localhost";
+    private final int queueSize = 3;
 
 
     public Server() {
-        this.queue = new EventQueue();
-        this.hostname = hostname;
+        this.server = new ServerAux();
+        this.gui = new ServerGUI(this);
+        this.mFifo = new MFIFO(queueSize);
+    }
+
+    public void startServer(int port) {
+        this.monitorCon = new ClientAux(this.hostname, this.monitorPort);
         this.port = port;
-        try {
-            this.server = new ServerAux();
-            this.server.start();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        this.gui = new Server(this);
-        this.monitorConnection = new ClientAux(serverHostName, serverPort)
+        this.server.start(port);
     }
 
     public void registerInMonitor() {
         Message msg = new Message();
-        this.monitorConnection.sendMsg(msg)
-        
+        this.monitorCon.sendMsg(msg);
     }
 
     public void processRequest() {
-        queue.put();
+        this.mFifo.put(null);
 
         // process com time to sleeps ig
 
-        // send to client aqui?
-        sendToClient()
+        // send to client processed result
+        sendToClient(null, 0);
 
         // send to monitor request finished processing
-        this.monitorConnection.sendMsg()
+        this.monitorCon.sendMsg(null);
 
-        queue.get()
+        this.mFifo.get();
     }
     
     public void sendToClient(String result, int port) {
-        ClientAux socket = new ClientAux(port);
-        socket.sendMsg();
+        ClientAux socket = new ClientAux(this.hostname, port);
+        socket.sendMsg(null);
     }
 
-    public static void main(String args[]) {
+    public static void main(String[] args) {
         new Server();        
     }
 }

@@ -1,22 +1,17 @@
 package Communication;
 
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 
 
 public class ServerAux {
-
-    private final int port;
     private ServerSocket serverSocket;
 
 
-    public ServerAux(int port) {
-        this.port = port;
+    public ServerAux() {
     }
 
-    public void start() {
+    public void start(int port) {
         try {
             serverSocket = new ServerSocket(port);
 

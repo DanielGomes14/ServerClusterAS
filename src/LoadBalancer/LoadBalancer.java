@@ -1,6 +1,5 @@
 package LoadBalancer;
 
-import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -11,17 +10,16 @@ import Server.ServerInfo;
 public class LoadBalancer {
     
     private ClientAux monitorConn;
-    private final Map<Integer,ServerInfo> servers;
+    private Map<Integer,ServerInfo> servers;
     private final ServerAux serverAux;
-    private final String hostname;
-    private final String port;
+    private final String hostname = "localhost";
+    private String port;
     private final LoadBalancerGUI gui;
     
-    public LoadBalancer(String hostname, int port, int monitorport) {
+    public LoadBalancer() {
         this.gui = new LoadBalancerGUI(this);
         this.servers = new HashMap<Integer, ServerInfo>();
-        this.serverAux = new ServerAux(this, port);
-        this.monitorConn = new ClientAux(hostname, monitorport);
+        this.serverAux = new ServerAux(this);
     }
 
     public void registerInMonitor() {
@@ -35,8 +33,8 @@ public class LoadBalancer {
     }
 
     public void sendServerRequest(Message msg) {
-        ClientAux socket = new ClientAux(hostname, msg.getServerPort());
-        socket.sendMsg(msg);
+//        ClientAux socket = new ClientAux(hostname, msg.getServerPort());
+//        socket.sendMsg(msg);
     }
 
 
@@ -45,6 +43,6 @@ public class LoadBalancer {
     }
 
     public static void main(String args[]) {
-        new LoadBalancer(null, 0, 0);        
+        new LoadBalancer();
     }
 }
