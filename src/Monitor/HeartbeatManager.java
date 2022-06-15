@@ -4,12 +4,14 @@ import Communication.ClientAux;
 import Communication.Message;
 
 public class HeartbeatManager extends  Thread {
-    private ClientAux clientAux;
+    private final ClientAux clientAux;
     private final int HEATBEAT_TIMEOUT = 1000;
     private final int serviceId; //Id of the Service to be monitored through Heartbeat
-    public HeartbeatManager(String hostname, int port, int serviceId){
+    private  final  Monitor monitor;
+    public HeartbeatManager(String hostname, int port, int serviceId, Monitor monitor){
         this.clientAux = new ClientAux(hostname,port);
         this.serviceId = serviceId;
+        this.monitor = monitor;
     }
 
 
@@ -35,6 +37,7 @@ public class HeartbeatManager extends  Thread {
                 System.out.println(ex.toString());
             }
         }
-
+        this.monitor.serverDown(serviceId);
+        // Inform Monitor of Server Failure
     }
 }
