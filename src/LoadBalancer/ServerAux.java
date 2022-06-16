@@ -6,7 +6,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 
-public class ServerAux {
+public class ServerAux extends Thread {
 
     private int port;
     private ServerSocket serverSocket;
@@ -17,7 +17,7 @@ public class ServerAux {
         this.lb = lb;
     }
 
-    public void start(int port) {
+    public void run() {
         try {
             serverSocket = new ServerSocket(port);
 
@@ -50,5 +50,9 @@ public class ServerAux {
         } catch (Exception e) {
             System.err.println(e);
         }
+    }
+
+    public void setPort(int port) {
+        this.port = port;
     }
 }

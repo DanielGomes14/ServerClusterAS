@@ -1,27 +1,23 @@
 package Client;
 
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 
 
-public class ServerAux {
-
+public class ServerAux extends Thread {
     private int port;
-    private InetAddress addr;
+    private final Client client;
     private ServerSocket serverSocket;
 
-
-    public ServerAux() {
+    public ServerAux(Client client) {
+        this.client = client;
     }
 
-    public void start(int port) {
+    public void run() {
         try {
-            serverSocket = new ServerSocket();
+            serverSocket = new ServerSocket(0);
             this.port = serverSocket.getLocalPort();
-            this.addr = serverSocket.getInetAddress();
+            this.client.getGui().setClientPort(port);
 
             // running infinite loop for getting
             // client request
