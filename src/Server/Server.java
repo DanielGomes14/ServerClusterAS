@@ -1,6 +1,5 @@
 package Server;
 
-import Client.ServerAux;
 import Communication.ClientAux;
 import Communication.Message;
 import FIFO.MFIFO;
@@ -22,10 +21,9 @@ public class Server {
         this.mFifo = new MFIFO(queueSize);
     }
 
-    public void startServer(int port) {
+    public void startServer() {
         this.monitorCon = new ClientAux(this.hostname, this.monitorPort);
-        this.port = port;
-        this.server.start(port);
+        this.server.start();
     }
 
     public void registerInMonitor() {

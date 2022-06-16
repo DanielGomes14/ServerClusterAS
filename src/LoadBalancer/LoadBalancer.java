@@ -22,6 +22,15 @@ public class LoadBalancer {
         this.serverAux = new ServerAux(this);
     }
 
+    public void start(int port) {
+        this.serverAux.setPort(port);
+        new Thread(this.serverAux).start();
+    }
+
+    public void end() {
+        this.serverAux.close();
+    }
+
     public void registerInMonitor() {
         // send msg to Monitor informing that the LB Is running
         Message msg = new Message();
@@ -39,7 +48,7 @@ public class LoadBalancer {
 
 
     public void forwardPendingRequests() {
-        
+
     }
 
     public static void main(String args[]) {
