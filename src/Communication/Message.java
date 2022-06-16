@@ -1,6 +1,9 @@
 package Communication;
 
 import java.io.Serializable;
+import java.util.Map;
+
+import Server.ServerInfo;
 
 public class Message implements Serializable {
     private int topic;
@@ -11,26 +14,41 @@ public class Message implements Serializable {
 
     private int serverId;
 
+    private int serverPort;
+
     /**  Number of iterations */
-    private int na;
+    private int NI;
+
+    private int deadline;
 
     private double pi;
+
+    private Map<Integer, ServerInfo> serversInfo;
 
     public Message(int topic) {
         this.topic = topic;
     }
 
-    public Message(int topic, int requestId, int clientId, int serverId, int na) {
+    public Message(int topic, int requestId, int clientId, int serverId, int NI, int deadline) {
         this.topic = topic;
         this.requestId = requestId;
         this.clientId = clientId;
         this.serverId = serverId;
-        this.na = na;
+        this.NI = NI;
+        this.deadline = deadline;
     }
 
     public Message() {
     }
 
+
+    public Map<Integer, ServerInfo> getServersInfo() {
+        return serversInfo;
+    }
+
+    public void setServersInfo(Map<Integer, ServerInfo> serversInfo) {
+        this.serversInfo = serversInfo;
+    }
 
     public int getTopic() {
         return topic;
@@ -39,6 +57,7 @@ public class Message implements Serializable {
     public void setTopic(int topic) {
         this.topic = topic;
     }
+    
 
     public int getRequestId() {
         return requestId;
@@ -64,12 +83,20 @@ public class Message implements Serializable {
         this.serverId = serverId;
     }
 
-    public int getNa() {
-        return na;
+    public int getServerPort() {
+        return serverPort;
     }
 
-    public void setNa(int na) {
-        this.na = na;
+    public void setServerPort(int serverPort) {
+        this.serverPort = serverPort;
+    }
+
+    public int getNI() {
+        return NI;
+    }
+
+    public void setNI(int NI) {
+        this.NI = NI;
     }
 
     public double getPi() {
@@ -78,5 +105,13 @@ public class Message implements Serializable {
 
     public void setPi(double pi) {
         this.pi = pi;
+    }
+
+    public int getDeadline() {
+        return deadline;
+    }
+
+    public void setDeadline(int deadline) {
+        this.deadline = deadline;
     }
 }

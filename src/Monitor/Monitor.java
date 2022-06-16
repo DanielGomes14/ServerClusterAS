@@ -21,20 +21,27 @@ public class Monitor implements IMonitor, IMonitor_Heartbeat{
     private final String hostname = "localhost";
     private final int port = 9000;
     private final ServerAux serverAux;
-    private final Map<Integer, HeartbeatManager> heartbeatThreads;
+    private final Map<Integer, HeartbeatManager> serverHeartbeatThreads;
+    private final Map<Integer, HeartbeatManager> LBHeartbeatThreads;
     private final ReentrantLock rl;
     private int serverCount;
-    private int lbCount;
+    private int LBCount;
     private int clientCount;
-    private List<ClientAux> LBs;
+    
+    private final Map<Integer, ClientAux> LBs;
+    private int primaryLB;
 
     public Monitor() {
         this.rl = new ReentrantLock();
         this.servers = new HashMap<>();
+        this.LBs = new HashMap<>();
+        this.primaryLB = -1;
+
         this.pendingRequests = new HashMap<>();
-        this.heartbeatThreads = new HashMap<>();
+        this.serverHeartbeatThreads = new HashMap<>();
+        this.LBHeartbeatThreads = new HashMap<>();
+
         this.serverAux = new ServerAux();
-        this.LBs = new ArrayList<>();
     }
 
     public void start() {
@@ -46,9 +53,9 @@ public class Monitor implements IMonitor, IMonitor_Heartbeat{
         
         this.servers.put(this.serverCount, serverInfo);
         
-        this.heartbeatThreads.put(this.serverCount, new HeartbeatManager(
-        this.hostname, this.port, this.serverCount, this));
-        this.heartbeatThreads.get(this.serverCount).start();
+        this.serverHeartbeatThreads.put(this.serverCount, new HeartbeatManager(
+            this.hostname, this.port, this.serverCount, true, this));
+        this.serverHeartbeatThreads.get(this.serverCount).start();
 
         this.serverCount++;
 
@@ -71,20 +78,34 @@ public class Monitor implements IMonitor, IMonitor_Heartbeat{
         this.rl.unlock();
     }
 
-    public void registerLoadBalancer(ServerInfo serverInfo) {
+    public int registerLoadBalancer(Message msg) {
+        int id = -1;
+
         this.rl.lock();
 
-        int id = this.lbCount++;
-        
-        this.servers.put(id, serverInfo);
-        
-        this.heartbeatThreads.put(id, new HeartbeatManager(
-            this.hostname, this.port, id, this));
-        this.heartbeatThreads.get(id).start();
+        id = this.LBCount++;
+
+
+        if (this.LBs.size() <= 2) {
+            ClientAux con = new ClientAux(this.hostname, port);
+            new Thread(con).start();
+
+            this.LBs.put(id, con);
+
+            if (this.primaryLB == -1) {
+                // send pending requests
+                this.primaryLB = id;
+            }
+
+            this.LBHeartbeatThreads.put(id, new HeartbeatManager(
+                this.hostname, this.port, id, false, this));
+            this.LBHeartbeatThreads.get(id).start();
+        }
 
         this.rl.unlock();
 
-        this.LBs.add(new ClientAux(this.hostname, port));
+        return id;
+
     }
 
     public void serverDown(int serverId){
@@ -92,16 +113,40 @@ public class Monitor implements IMonitor, IMonitor_Heartbeat{
 
         servers.remove(serverId);
         List<Message> pendingRequests = this.pendingRequests.remove(serverId);
-        heartbeatThreads.remove(serverId);
+        serverHeartbeatThreads.remove(serverId);
 
         this.rl.unlock();
 
         // add pending requests to message
         // send message to loadbalancer
         Message msg = new Message();
-        ClientAux primaryLb = this.LBs.get(0);
-        if (primaryLb != null)
-            primaryLb.sendMsg(msg);
+        ClientAux LB = this.LBs.get(primaryLB);
+        if (LB != null)
+            LB.sendMsg(msg);
+    }
+
+
+    public void LBDown(int LBId){
+        this.rl.lock();
+
+        LBHeartbeatThreads.remove(LBId);
+        
+        this.LBs.remove(LBId);
+
+        if (LBId == primaryLB){
+            primaryLB = -1;
+
+            // send pending requests to other active lb
+            if (! this.LBs.isEmpty()) {
+                Integer activeLBId = (Integer) this.LBs.keySet().toArray()[0];
+                if (activeLBId != null) {
+                    primaryLB = activeLBId;
+                    // send pending
+                }
+            }
+        }
+
+        this.rl.unlock();
     }
     
     public void registerNewClient(Message msg) {
@@ -135,6 +180,9 @@ public class Monitor implements IMonitor, IMonitor_Heartbeat{
         this.rl.unlock();
     }
 
+    public Map<Integer,ServerInfo> getServersInfo(){
+        return servers;
+    }
     public static void main(String[] args) {
         new Monitor();
     }

@@ -6,6 +6,7 @@ import java.net.Socket;
 
 import Communication.Message;
 import Communication.MessageTopic;
+import Server.ServerInfo;
 
 import static Communication.MessageTopic.HEARTBEAT_ACK;
 
@@ -27,19 +28,25 @@ public class TClientHandler implements Runnable{
             // get the input stream of client
             in =  new ObjectInputStream(clientSocket.getInputStream());
             out = new ObjectOutputStream(clientSocket.getOutputStream());
-            Message message;
+            Message msg;
 
             while (true) {
                 try {
-                    message = (Message) in.readObject();
-                    switch ((message.getTopic())){
+                    msg = (Message) in.readObject();
+                    switch (msg.getTopic()){
                         case MessageTopic.HEARTBEAT:
                             Message m = new Message(HEARTBEAT_ACK);
                             sendMsg(m);
                             break;
+                        case MessageTopic.CLIENT_REGISTER:
+                            this.lb.clientRegister(msg);
+                            break;
                         case MessageTopic.REQUEST:
-                            this.lb.clientRequest(message);
-
+                            this.lb.clientRequest(msg);
+                            break;
+                        case MessageTopic.SERVERS_INFO:
+                            this.lb.forwardMessage(msg);
+                            break;
                     }
                     // client requests
                     // monitor heartbeat

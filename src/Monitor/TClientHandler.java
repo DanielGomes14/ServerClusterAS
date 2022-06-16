@@ -41,7 +41,12 @@ public class TClientHandler implements Runnable{
                             break;
                         case MessageTopic.REQUEST:
                             this.monitor.receiveNewRequest(message);
-                            
+                            Message msg = new Message(MessageTopic.SERVERS_INFO);
+                            msg.setServersInfo(this.monitor.getServersInfo());
+                            sendMsg(msg);
+                            break;
+                        case MessageTopic.REGISTER_LB:
+                            this.monitor.registerLoadBalancer(message);
                     }
                     // client requests
                     // monitor heartbeat

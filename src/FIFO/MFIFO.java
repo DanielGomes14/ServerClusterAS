@@ -6,7 +6,7 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 
-public class MFIFO {
+public class MFIFO implements  IFIFO_Server{
     private int idxPut = 0;
     private int idxGet = 0;
     private int count = 0;
@@ -17,9 +17,8 @@ public class MFIFO {
     private final Condition cNotFull;
     private final Condition cNotEmpty;
 
-    private boolean recordsAvailable = true;
 
-    public MFIFO(int size) {
+    public MFIFO(int size){
         this.size = size;
         this.fifo = new Message[ size ];
         this.rl = new ReentrantLock();
@@ -27,12 +26,12 @@ public class MFIFO {
         this.cNotFull = rl.newCondition();
     }
 
-    public void put(Message record) {
+    public void put(Message request) {
         try {
             rl.lock();
             while ( isFull() )
                 cNotFull.await();
-            fifo[ idxPut ] = record;
+            fifo[ idxPut ] = request;
             idxPut = (++idxPut) % size;
             count++;
             cNotEmpty.signal();
@@ -60,10 +59,16 @@ public class MFIFO {
     }
 
     public boolean isFull() {
-        return count == size;
+        this.rl.lock();
+        boolean res = count == size;
+        this.rl.unlock();
+        return res;
     }
 
     public boolean isEmpty() {
-        return count == 0;
+        this.rl.lock();
+        boolean res = count == 0;
+        this.rl.unlock();
+        return res;
     }
 }
