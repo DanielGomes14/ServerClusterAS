@@ -55,6 +55,22 @@ public class Monitor implements IMonitor, IMonitor_Heartbeat{
         this.rl.unlock();
     }
 
+    public  void receiveNewRequest(Message message){
+        this.rl.lock();
+        List<Message> lstmessages;
+        if(this.pendingRequests.containsKey(message.getRequestId())){
+            lstmessages = this.pendingRequests.get(message.getRequestId());
+            lstmessages.add(message);
+        }
+        else{
+            lstmessages =  new ArrayList<Message>();
+            lstmessages.add(message);
+        }
+        this.pendingRequests.put(message.getRequestId(), lstmessages);
+
+        this.rl.unlock();
+    }
+
     public void registerLoadBalancer(ServerInfo serverInfo) {
         this.rl.lock();
 

@@ -1,7 +1,7 @@
-package LoadBalancer;
+package Monitor;
 
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import LoadBalancer.LoadBalancer;
+
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -10,11 +10,11 @@ public class ServerAux {
 
     private int port;
     private ServerSocket serverSocket;
-    private final LoadBalancer lb;
+    private final Monitor monitor;
 
 
-    public ServerAux(LoadBalancer lb) {
-        this.lb = lb;
+    public ServerAux(Monitor monitor) {
+        this.monitor = monitor;
     }
 
     public void start(int port) {
@@ -33,7 +33,7 @@ public class ServerAux {
                 System.out.println("New client connected");
 
                 // create a new thread object
-                TClientHandler clientSock = new TClientHandler(client, lb);
+                TClientHandler clientSock = new TClientHandler(client, monitor);
 
                 // This thread will handle the client
                 // separately

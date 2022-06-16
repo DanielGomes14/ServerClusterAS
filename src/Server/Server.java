@@ -3,6 +3,7 @@ package Server;
 import Client.ServerAux;
 import Communication.ClientAux;
 import Communication.Message;
+import Communication.MessageTopic;
 import FIFO.MFIFO;
 
 public class Server {
@@ -29,7 +30,7 @@ public class Server {
     }
 
     public void registerInMonitor() {
-        Message msg = new Message();
+        Message msg = new Message(MessageTopic.REGISTER_LB);
         this.monitorCon.sendMsg(msg);
     }
 

@@ -1,24 +1,26 @@
-package LoadBalancer;
+package Monitor;
+
+import Communication.Message;
+import Communication.MessageTopic;
+import LoadBalancer.LoadBalancer;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
-
-import Communication.Message;
-import Communication.MessageTopic;
 
 import static Communication.MessageTopic.HEARTBEAT_ACK;
 
 public class TClientHandler implements Runnable{
 
     private  final Socket clientSocket;
-    private  final LoadBalancer lb;
+    private  final Monitor monitor;
     private ObjectInputStream in = null;
     private ObjectOutputStream out = null;
 
-    public TClientHandler(Socket socket, LoadBalancer lb) {
+    public TClientHandler(Socket socket, Monitor monitor) {
         this.clientSocket = socket;
-        this.lb = lb;
+        this.monitor = monitor;
     }
 
     @Override
@@ -38,8 +40,8 @@ public class TClientHandler implements Runnable{
                             sendMsg(m);
                             break;
                         case MessageTopic.REQUEST:
-                            this.lb.clientRequest(message);
-
+                            this.monitor.receiveNewRequest(message);
+                            
                     }
                     // client requests
                     // monitor heartbeat

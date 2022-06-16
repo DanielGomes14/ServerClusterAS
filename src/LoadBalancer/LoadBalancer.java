@@ -5,6 +5,7 @@ import java.util.Map;
 
 import Communication.ClientAux;
 import Communication.Message;
+import Communication.MessageTopic;
 import Server.ServerInfo;
 
 public class LoadBalancer {
@@ -13,7 +14,7 @@ public class LoadBalancer {
     private Map<Integer,ServerInfo> servers;
     private final ServerAux serverAux;
     private final String hostname = "localhost";
-    private String port;
+    private final int port = 5000;
     private final LoadBalancerGUI gui;
     
     public LoadBalancer() {
@@ -24,13 +25,14 @@ public class LoadBalancer {
 
     public void registerInMonitor() {
         // send msg to Monitor informing that the LB Is running
-        Message msg = new Message();
+        Message msg = new Message(MessageTopic.REGISTER_LB);
         this.monitorConn.sendMsg(msg);
     }
 
     public void clientRequest(Message msg) {
         this.monitorConn.sendMsg(msg);
     }
+
 
     public void sendServerRequest(Message msg) {
 //        ClientAux socket = new ClientAux(hostname, msg.getServerPort());
@@ -42,7 +44,12 @@ public class LoadBalancer {
         
     }
 
+    public void start(){
+        this.serverAux.start(5000);
+
+    }
+
     public static void main(String args[]) {
-        new LoadBalancer();
+        LoadBalancer lb = new LoadBalancer();
     }
 }
