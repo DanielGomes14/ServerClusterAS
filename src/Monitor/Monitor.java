@@ -2,6 +2,7 @@ package Monitor;
 
 import Communication.ClientAux;
 import Communication.Message;
+import Communication.MessageTopic;
 import Server.ServerInfo;
 
 import java.util.ArrayList;
@@ -132,6 +133,10 @@ public class Monitor implements IMonitor, IMonitor_Heartbeat{
         // add pending requests to message
         // send message to loadbalancer
         Message msg = new Message();
+        msg.setTopic(MessageTopic.FORWARD_PENDING);
+
+        msg.setPendingRequests((ArrayList<Message>) this.pendingRequests.get(serverId));
+);
         ClientAux LB = this.LBs.get(primaryLB);
         if (LB != null)
             LB.sendMsg(msg);

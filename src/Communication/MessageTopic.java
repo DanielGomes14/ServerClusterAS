@@ -15,6 +15,7 @@ public class MessageTopic {
     public static final int SERVER_REGISTER = 10;
     public static final int REMOVE_LB = 11;
     public static final int REMOVE_SERVER = 12;
+    public static  final int FORWARD_PENDING = 13;
 
 
 
