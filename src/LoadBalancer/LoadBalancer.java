@@ -1,5 +1,6 @@
 package LoadBalancer;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -33,7 +34,7 @@ public class LoadBalancer {
         this.serverAux.start();
 
         // start the connection and register in the monitor
-        this.monitorCon = new ClientAux(hostname, monitorPort, new Message(MessageTopic.REGISTER_LB, this.port));
+        this.monitorCon = new ClientAux(hostname, monitorPort, new Message(MessageTopic.LB_REGISTER, this.port));
         this.monitorCon.start();
     }
 
@@ -43,11 +44,19 @@ public class LoadBalancer {
    
 
     public void clientRegister(Message msg) {
-        this.monitorCon.sendMsg(msg);
+        try {
+            this.monitorCon.sendMsg(msg);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public void clientRequest(Message msg) {
-        this.monitorCon.sendMsg(msg);
+        try {
+            this.monitorCon.sendMsg(msg);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         pendingRequests.put(msg.getRequestId(), msg);
     }
 

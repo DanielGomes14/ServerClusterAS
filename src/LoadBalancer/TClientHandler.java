@@ -33,7 +33,8 @@ public class TClientHandler implements Runnable{
             while (true) {
                 try {
                     msg = (Message) in.readObject();
-                    System.out.println(msg.getTopic());
+                    if (msg.getTopic() != 4)
+                        System.out.println(msg.getTopic());
                     switch (msg.getTopic()){
                         case MessageTopic.CLIENT_REGISTER:
                             this.lb.clientRegister(msg);

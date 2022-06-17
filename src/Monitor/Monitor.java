@@ -4,6 +4,7 @@ import Communication.ClientAux;
 import Communication.Message;
 import Server.ServerInfo;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -52,25 +53,6 @@ public class Monitor implements IMonitor, IMonitor_Heartbeat{
         return this.gui;
     }
 
-    public void registerNewServer(ServerInfo serverInfo) {
-        this.rl.lock();
-        
-        this.servers.put(this.serverCount, serverInfo);
-        
-        this.serverHeartbeatThreads.put(this.serverCount, new HeartbeatManager(
-            this.hostname, this.port, this.serverCount, true, this));
-        try {
-            Thread.sleep(200);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        this.serverHeartbeatThreads.get(this.serverCount).start();
-
-        this.serverCount++;
-
-        this.rl.unlock();
-    }
-
     public  void receiveNewRequest(Message message){
         this.rl.lock();
         List<Message> lstmessages;
@@ -96,7 +78,7 @@ public class Monitor implements IMonitor, IMonitor_Heartbeat{
             id = this.LBCount++;
 
             ClientAux con = new ClientAux(this.hostname, msg.getServerPort());
-            new Thread(con).start();
+            con.start();
 
             this.LBs.put(id, con);
 
@@ -107,17 +89,28 @@ public class Monitor implements IMonitor, IMonitor_Heartbeat{
 
             this.LBHeartbeatThreads.put(id, new HeartbeatManager(
                 this.hostname, msg.getServerPort(), id, false, this));
-            try {
-                Thread.sleep(200);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
             this.LBHeartbeatThreads.get(id).start();
         }
 
         this.rl.unlock();
 
         return id;
+    }
+
+    public void registerNewServer(ServerInfo serverInfo) {
+        this.rl.lock();
+
+        int id = this.LBCount++;
+
+        serverInfo.setServerId(id);
+
+        this.servers.put(id, serverInfo);
+
+        this.serverHeartbeatThreads.put(id, new HeartbeatManager(
+                this.hostname, serverInfo.getServerPort(), id, true, this));
+        this.serverHeartbeatThreads.get(id).start();
+
+        this.rl.unlock();
     }
 
     public void serverDown(int serverId){
@@ -133,8 +126,13 @@ public class Monitor implements IMonitor, IMonitor_Heartbeat{
         // send message to loadbalancer
         Message msg = new Message();
         ClientAux LB = this.LBs.get(primaryLB);
-        if (LB != null)
-            LB.sendMsg(msg);
+        if (LB != null) {
+            try {
+                LB.sendMsg(msg);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
 

@@ -2,13 +2,12 @@ package Monitor;
 
 import Communication.Message;
 import Communication.MessageTopic;
+import Server.ServerInfo;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
-
-import static Communication.MessageTopic.HEARTBEAT_ACK;
 
 public class TClientHandler extends Thread {
 
@@ -44,8 +43,11 @@ public class TClientHandler extends Thread {
                             msg.setServersInfo(this.monitor.getServersInfo());
                             sendMsg(msg);
                             break;
-                        case MessageTopic.REGISTER_LB:
+                        case MessageTopic.LB_REGISTER:
                             this.monitor.registerLoadBalancer(msg);
+                            break;
+                        case MessageTopic.SERVER_REGISTER:
+                            this.monitor.registerNewServer(new ServerInfo(msg.getServerId(), msg.getServerPort(), 0));
                             break;
                     }
                     // client requests

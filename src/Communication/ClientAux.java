@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.net.SocketAddress;
 
 
 public class ClientAux extends Thread {
@@ -49,12 +48,8 @@ public class ClientAux extends Thread {
         }
     }
 
-    public void sendMsg(Message msg) {
-        try {
-            out.writeObject(msg);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public void sendMsg(Message msg) throws IOException {
+        out.writeObject(msg);
     }
 
 }
