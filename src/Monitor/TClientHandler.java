@@ -1,5 +1,6 @@
 package Monitor;
 
+import Communication.ClientAux;
 import Communication.Message;
 import Communication.MessageTopic;
 import Server.ServerInfo;
@@ -11,8 +12,9 @@ import java.net.Socket;
 
 public class TClientHandler extends Thread {
 
-    private  final Socket clientSocket;
-    private  final Monitor monitor;
+    private final Socket clientSocket;
+    private final Monitor monitor;
+    private final String hostname = "localhost";
     private ObjectInputStream in = null;
     private ObjectOutputStream out = null;
 
@@ -44,12 +46,25 @@ public class TClientHandler extends Thread {
                             sendMsg(msg);
                             break;
                         case MessageTopic.LB_REGISTER:
-                            this.monitor.registerLoadBalancer(msg);
+                            new ClientAux(
+                                    hostname,
+                                    msg.getServerPort(),
+                                    this.monitor.registerLoadBalancer(msg)
+                            ).start();
                             break;
                         case MessageTopic.SERVER_REGISTER:
-                            this.monitor.registerNewServer(new ServerInfo(msg.getServerId(), msg.getServerPort(), 0));
+                            new ClientAux(
+                                    hostname,
+                                    msg.getServerPort(),
+                                    this.monitor.registerNewServer(
+                                            new ServerInfo(msg.getServerId(), msg.getServerPort(), 0)
+                                    )
+                            ).start();
                         case MessageTopic.REQUEST_PROCESSED:
                             this.monitor.requestProcessed(msg);
+                            break;
+                        case MessageTopic.CLIENT_REGISTER_PENDING:
+                            this.monitor.sendMsgToLB(this.monitor.registerNewClient(msg));
                             break;
                         case MessageTopic.REJECTION:
                             //

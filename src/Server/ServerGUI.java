@@ -55,7 +55,17 @@ public class ServerGUI {
     public void setServerPort(int port) {
         try {
             queue.invokeAndWait(() -> {
-                clientPort.setText(String.format("My Server Port: %d", port));
+                clientPort.setText(String.format("Server Port: %d", port));
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void setServerId(int id) {
+        try {
+            queue.invokeAndWait(() -> {
+                serverId.setText(String.format("Server Id: %d", id));
             });
         } catch (Exception e) {
             e.printStackTrace();

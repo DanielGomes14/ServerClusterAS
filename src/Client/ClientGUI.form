@@ -260,25 +260,17 @@
           </vspacer>
           <vspacer id="29a39">
             <constraints>
-              <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false">
+              <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false">
                 <preferred-size width="10" height="20"/>
               </grid>
             </constraints>
           </vspacer>
           <component id="77e68" class="javax.swing.JLabel" binding="lbPort">
             <constraints>
-              <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-            </constraints>
-            <properties>
-              <text value="Load Balancer Port: unknown"/>
-            </properties>
-          </component>
-          <component id="50d29" class="javax.swing.JLabel" binding="clientPort">
-            <constraints>
               <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <text value="My Server Port: unknown"/>
+              <text value="Load Balancer Port: unknown"/>
             </properties>
           </component>
           <vspacer id="e31da">
@@ -288,6 +280,14 @@
               </grid>
             </constraints>
           </vspacer>
+          <component id="8e972" class="javax.swing.JLabel" binding="clientPort">
+            <constraints>
+              <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <text value="Client Port: unknown"/>
+            </properties>
+          </component>
         </children>
       </grid>
     </children>

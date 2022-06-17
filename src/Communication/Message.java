@@ -10,8 +10,6 @@ public class Message implements Serializable {
 
     private int requestId;
 
-    private int clientId;
-
     private int serverId;
 
     private int serverPort;
@@ -32,7 +30,6 @@ public class Message implements Serializable {
     public Message(int topic, int requestId, int clientId, int serverId, int NI, int deadline) {
         this.topic = topic;
         this.requestId = requestId;
-        this.clientId = clientId;
         this.serverId = serverId;
         this.NI = NI;
         this.deadline = deadline;
@@ -43,6 +40,12 @@ public class Message implements Serializable {
 
     public Message(int topic, int port) {
         this.topic = topic;
+        this.serverPort = port;
+    }
+
+    public Message(int topic, int serverId, int port) {
+        this.topic = topic;
+        this.serverId = serverId;
         this.serverPort = port;
     }
 
@@ -70,14 +73,6 @@ public class Message implements Serializable {
 
     public void setRequestId(int requestId) {
         this.requestId = requestId;
-    }
-
-    public int getClientId() {
-        return clientId;
-    }
-
-    public void setClientId(int clientId) {
-        this.clientId = clientId;
     }
 
     public int getServerId() {

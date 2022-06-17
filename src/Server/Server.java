@@ -11,7 +11,7 @@ import java.io.IOException;
 public class Server {
     private final ServerGUI gui;
     private ServerAux serverAux;
-    private int port;
+    private int serverId;
     private  ClientAux monitorCon;
     private final int monitorPort = 5000;
     private final IFIFO_Server mFifo;
@@ -39,11 +39,20 @@ public class Server {
         return this.gui;
     }
 
+    public void setServerId(int serverId) {
+        this.serverId = serverId;
+        this.gui.setServerId(serverId);
+    }
+
     public void processRequest(Message msg) {
         //TODO: Check Number of iterations that the server may process
         if(this.mFifo.isFull()){
             msg.setTopic(MessageTopic.REJECTION);
-            this.monitorCon.sendMsg(msg);
+            try {
+                this.monitorCon.sendMsg(msg);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             // reply with that the request cannot be processed at the momment
         }
         this.mFifo.put(msg);

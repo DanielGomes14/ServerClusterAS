@@ -1,6 +1,7 @@
 package Server;
 
 import Communication.Message;
+import Communication.MessageTopic;
 
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -35,6 +36,9 @@ public class TClientHandler extends Thread {
                     if (msg.getTopic() != 4)
                         System.out.println(msg.getTopic());
                     switch ((msg.getTopic())) {
+                        case MessageTopic.SERVER_REGISTER:
+                            this.server.setServerId(msg.getServerId());
+                            break;
                         default:
                             break;
                     }

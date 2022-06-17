@@ -12,6 +12,7 @@ public class Client {
     private final String hostname = "localhost";
     private ServerAux serverAux;
     private ClientAux clientAux;
+    private int clientId;
 
     public Client() {
         this.queue = new EventQueue();
@@ -36,6 +37,11 @@ public class Client {
     public ClientAux getClientAux() { return this.clientAux; };
 
     public void setClientAux(ClientAux clientAux) { this.clientAux = clientAux; };
+
+    public void setClientId(int clientId) {
+        this.clientId = clientId;
+        this.gui.setClientId(clientId);
+    }
 
 
     public static void main(String[] args) {

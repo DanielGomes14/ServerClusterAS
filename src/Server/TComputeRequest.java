@@ -7,15 +7,15 @@ import static Communication.MessageTopic.REPLY;
 import static Communication.MessageTopic.REQUEST_PROCESSED;
 
 class TComputeRequest extends Thread{
-
-
         private final IFIFO_Server mfifo;
         private  final String PI = "3.1415926589793";
         private final Server server;
+
         public  TComputeRequest(IFIFO_Server mfifo, Server server){
             this.mfifo = mfifo;
             this.server = server;
         }
+
         /**
          * Processing thread life cycle.
          */
@@ -33,18 +33,16 @@ class TComputeRequest extends Thread{
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
-
                 }
             }
         }
 
         public  Message calculatePI(Message msg) throws InterruptedException {
                 String base="3.";
-                for(int i = 1; i<= msg.getNI();i++){
+                for(int i = 1; i<=msg.getNI(); i++){
                     base = addDecimalPlace(base,i+1);
                 }
-                Thread.sleep(msg.getDeadline());
-                // use the same message IG..
+                Thread.sleep(msg.getNI());
                 msg.setTopic(REPLY);
                 msg.setPi(Double.parseDouble(base));
                 return msg;

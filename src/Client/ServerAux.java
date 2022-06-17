@@ -28,7 +28,7 @@ public class ServerAux extends Thread {
             this.client.getGui().setClientPort(port);
 
             this.client.setClientAux(new ClientAux(this.hostname, this.LBPort,
-                    new Message(MessageTopic.CLIENT_REGISTER)));
+                    new Message(MessageTopic.CLIENT_REGISTER_PENDING, this.port)));
             this.client.getClientAux().start();
 
             // running infinite loop for getting client requests
