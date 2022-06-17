@@ -78,6 +78,7 @@ public class Monitor implements IMonitor, IMonitor_Heartbeat{
 
         this.rl.lock();
 
+        System.out.println(this.LBs.size());
         if (this.LBs.size() <= 2) {
             id = this.LBCount++;
 
@@ -103,6 +104,8 @@ public class Monitor implements IMonitor, IMonitor_Heartbeat{
 
         msg.setServerId(id);
 
+        this.gui.registerLB(msg, primaryLB);
+
         return msg;
     }
 
@@ -121,7 +124,11 @@ public class Monitor implements IMonitor, IMonitor_Heartbeat{
 
         this.rl.unlock();
 
-        return new Message(MessageTopic.SERVER_REGISTER, id, serverInfo.getServerPort());
+        Message msg = new Message(MessageTopic.SERVER_REGISTER, id, serverInfo.getServerPort());
+
+        this.gui.registerServer(msg);
+
+        return msg;
     }
 
     public Message registerNewClient(Message msg) {
@@ -136,6 +143,9 @@ public class Monitor implements IMonitor, IMonitor_Heartbeat{
 
         msg.setServerId(id);
         msg.setTopic(MessageTopic.CLIENT_REGISTER_ACCEPTED);
+
+        this.gui.registerClient(msg);
+
         return msg;
     }
 
@@ -145,6 +155,8 @@ public class Monitor implements IMonitor, IMonitor_Heartbeat{
         servers.remove(serverId);
         List<Message> pendingRequests = this.pendingRequests.remove(serverId);
         serverHeartbeatThreads.remove(serverId);
+
+        this.gui.removeServer(serverId);
 
         this.rl.unlock();
 
@@ -171,6 +183,8 @@ public class Monitor implements IMonitor, IMonitor_Heartbeat{
         this.rl.lock();
 
         LBHeartbeatThreads.remove(LBId);
+
+        this.LBs.get(LBId).close();
         
         this.LBs.remove(LBId);
 
@@ -182,10 +196,13 @@ public class Monitor implements IMonitor, IMonitor_Heartbeat{
                 Integer activeLBId = (Integer) this.LBs.keySet().toArray()[0];
                 if (activeLBId != null) {
                     primaryLB = activeLBId;
+                    this.gui.turnPrimaryLB(primaryLB);
                     // send pending
                 }
             }
         }
+
+        this.gui.removeLB(LBId);
 
         this.rl.unlock();
     }

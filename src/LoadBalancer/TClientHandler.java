@@ -11,7 +11,7 @@ import Server.ServerInfo;
 
 import static Communication.MessageTopic.HEARTBEAT_ACK;
 
-public class TClientHandler implements Runnable{
+public class TClientHandler extends Thread {
 
     private  final Socket clientSocket;
     private  final LoadBalancer lb;
@@ -65,14 +65,20 @@ public class TClientHandler implements Runnable{
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            try {
-                if (in != null) {
-                    in.close();
-                    clientSocket.close();
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
+            stopServer();
+        }
+    }
+
+    public void stopServer() {
+        try {
+            if (in != null) {
+                in.close();
+                clientSocket.close();
             }
+            if (out != null)
+                out.close();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 

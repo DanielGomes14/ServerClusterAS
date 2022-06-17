@@ -2,6 +2,8 @@ package LoadBalancer;
 
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class ServerAux extends Thread {
@@ -9,10 +11,12 @@ public class ServerAux extends Thread {
     private final int port;
     private ServerSocket serverSocket;
     private final LoadBalancer lb;
+    private List<TClientHandler> activeConnections;
 
 
     public ServerAux(LoadBalancer lb, int port) {
         this.lb = lb;
+        this.activeConnections = new ArrayList<>();
         this.port = port;
     }
 
@@ -36,7 +40,10 @@ public class ServerAux extends Thread {
 
                 // This thread will handle the client
                 // separately
-                new Thread(clientSock).start();
+                Thread clientThread = new Thread(clientSock);
+                clientThread.start();
+
+                activeConnections.add(clientSock);
             }
         } catch (Exception e) {
             System.err.println(e);
@@ -45,7 +52,11 @@ public class ServerAux extends Thread {
 
     public void close() {
         try {
+            for (TClientHandler clientSock: activeConnections) {
+                clientSock.stopServer();
+            }
             serverSocket.close();
+            activeConnections = new ArrayList<>();
         } catch (Exception e) {
             System.err.println(e);
         }

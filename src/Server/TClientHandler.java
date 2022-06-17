@@ -49,14 +49,20 @@ public class TClientHandler extends Thread {
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            try {
-                if (in != null) {
-                    in.close();
-                    clientSocket.close();
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
+            stopServer();
+        }
+    }
+
+    public void stopServer() {
+        try {
+            if (in != null) {
+                in.close();
+                clientSocket.close();
             }
+            if (out != null)
+                out.close();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }

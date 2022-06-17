@@ -24,7 +24,7 @@ public class HeartbeatManager extends  Thread {
         try {
             clientAux.sendMsg(msg);
         } catch (Exception e){
-            System.out.println(e.toString());
+            System.out.println(e);
             return false;
         }
         return  true;

@@ -1,11 +1,14 @@
 package Monitor;
 
 
+import Communication.Message;
 import Server.Server;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.util.HashMap;
 
 public class MonitorGUI {
     private final EventQueue queue;
@@ -20,16 +23,92 @@ public class MonitorGUI {
     private JTable LBTable;
     private JTabbedPane tabbedPane2;
     private JPanel panel1;
+    private DefaultTableModel tableModel0;
+    private DefaultTableModel tableModel1;
+    private DefaultTableModel tableModel2;
+    private HashMap<Integer, Integer> tableRows1;
+    private HashMap<Integer, Integer> tableRows2;
+
 
     public MonitorGUI(Monitor monitor) {
         this.queue = new EventQueue();
         this.monitor = monitor;
+
+        this.tableRows1 = new HashMap<>();
+        this.tableRows2 = new HashMap<>();
 
         JFrame jf = new JFrame();
         jf.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         jf.setSize(800, 500);
         jf.add(panel1);
         jf.setVisible(true);
+
+        tableModel0 = new DefaultTableModel();
+        tableModel1 = new DefaultTableModel();
+        tableModel2 = new DefaultTableModel();
+        tableModel0.addColumn("Client Id");
+        tableModel0.addColumn("Client Port");
+        tableModel1.addColumn("Server Id");
+        tableModel1.addColumn("Server Port");
+        tableModel1.addColumn("Server NI");
+        tableModel2.addColumn("LB Id");
+        tableModel2.addColumn("LB Port");
+        tableModel2.addColumn("Primary LB");
+        clientsTable.setModel(tableModel0);
+        serversTable.setModel(tableModel1);
+        LBTable.setModel(tableModel2);
+    }
+
+    public void registerClient(Message msg) {
+        Object[] obj = new Object[] {
+            msg.getServerId(), msg.getServerPort()
+        };
+
+        tableModel0.addRow(obj);
+    }
+
+    public void registerServer(Message msg) {
+        Object[] obj = new Object[] {
+            msg.getServerId(), msg.getServerPort(), msg.getNI()
+        };
+        this.tableRows1.put(msg.getServerId(), tableModel1.getRowCount());
+
+        tableModel1.addRow(obj);
+    }
+
+    public void removeServer(int searchedId) {
+        if (tableRows1.containsKey(searchedId))
+            tableModel1.removeRow(tableRows1.get(searchedId));
+        for(Integer id: tableRows1.keySet()){
+            int rowIdx = tableRows1.get(id);
+            if (rowIdx > searchedId)
+                tableRows1.put(id, rowIdx-1);
+        }
+    }
+
+    public void registerLB(Message msg, int primary) {
+        Object[] obj = new Object[] {
+                msg.getServerId(), msg.getServerPort(), msg.getServerId() == primary
+        };
+
+        this.tableRows2.put(msg.getServerId(), tableModel2.getRowCount());
+
+        tableModel2.addRow(obj);
+    }
+
+    public void removeLB(int searchedId) {
+        if (tableRows2.containsKey(searchedId))
+            tableModel2.removeRow(tableRows2.get(searchedId));
+        for(Integer id: tableRows2.keySet()){
+            int rowIdx = tableRows2.get(id);
+            if (rowIdx > searchedId)
+                tableRows2.put(id, rowIdx-1);
+        }
+    }
+
+    public void turnPrimaryLB(int searchedId) {
+        if (tableRows2.containsKey(searchedId))
+            tableModel2.setValueAt(true, tableRows2.get(searchedId), 2);
     }
 
     {

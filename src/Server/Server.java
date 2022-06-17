@@ -16,12 +16,13 @@ public class Server {
     private final int monitorPort = 5000;
     private final IFIFO_Server mFifo;
     private final String hostname = "localhost";
-    private final int queueSize = 3;
+    private final int queueSize = 5;
+    private final int numWorkers = 3;
 
 
     public Server() {
         this.mFifo = new MFIFO(queueSize);
-        for (int i = 1; i <= queueSize; i++)
+        for (int i = 1; i <= numWorkers; i++)
             new TComputeRequest(mFifo,this).start();
         this.gui = new ServerGUI(this);
     }

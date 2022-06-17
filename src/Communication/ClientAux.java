@@ -52,4 +52,20 @@ public class ClientAux extends Thread {
         out.writeObject(msg);
     }
 
+    public void close() {
+        try {
+            if (in != null) {
+                    in.close();
+            }
+            if (out != null) {
+                out.close();
+            }
+            if (clientSocket != null) {
+                clientSocket.close();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
 }

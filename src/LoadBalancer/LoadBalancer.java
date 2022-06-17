@@ -41,6 +41,10 @@ public class LoadBalancer {
 
     public void end() {
         this.serverAux.close();
+        this.serverAux = null;
+        this.monitorCon = null;
+        this.servers = new HashMap<>();
+        this.pendingRequests = new HashMap<>();
     }
    
 
