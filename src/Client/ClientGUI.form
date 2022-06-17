@@ -102,7 +102,7 @@
         </properties>
         <border type="none"/>
         <children>
-          <grid id="91ed8" layout-manager="GridLayoutManager" row-count="8" column-count="5" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+          <grid id="91ed8" layout-manager="GridLayoutManager" row-count="9" column-count="4" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
             <margin top="0" left="0" bottom="0" right="0"/>
             <constraints>
               <grid row="6" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
@@ -133,7 +133,7 @@
               </component>
               <component id="48fc1" class="javax.swing.JButton" binding="requestButton" default-binding="true">
                 <constraints>
-                  <grid row="0" column="4" row-span="3" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="2" use-parent-layout="false">
+                  <grid row="0" column="3" row-span="3" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="2" use-parent-layout="false">
                     <preferred-size width="100" height="60"/>
                   </grid>
                 </constraints>
@@ -157,32 +157,16 @@
                 </constraints>
                 <properties/>
               </component>
-              <component id="85444" class="javax.swing.JTable" binding="pendingRequestsTable">
-                <constraints>
-                  <grid row="5" column="0" row-span="1" col-span="2" vsize-policy="6" hsize-policy="6" anchor="0" fill="3" indent="0" use-parent-layout="false">
-                    <preferred-size width="150" height="50"/>
-                  </grid>
-                </constraints>
-                <properties/>
-              </component>
-              <component id="15270" class="javax.swing.JTable" binding="processedRequestsTable">
-                <constraints>
-                  <grid row="5" column="4" row-span="1" col-span="1" vsize-policy="6" hsize-policy="6" anchor="0" fill="3" indent="0" use-parent-layout="false">
-                    <preferred-size width="150" height="50"/>
-                  </grid>
-                </constraints>
-                <properties/>
-              </component>
               <vspacer id="459bd">
                 <constraints>
-                  <grid row="3" column="0" row-span="1" col-span="5" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false">
+                  <grid row="3" column="0" row-span="1" col-span="4" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false">
                     <preferred-size width="10" height="20"/>
                   </grid>
                 </constraints>
               </vspacer>
               <hspacer id="535dc">
                 <constraints>
-                  <grid row="4" column="2" row-span="2" col-span="1" vsize-policy="1" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false">
+                  <grid row="4" column="2" row-span="3" col-span="1" vsize-policy="1" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false">
                     <preferred-size width="10" height="-1"/>
                   </grid>
                 </constraints>
@@ -197,7 +181,7 @@
               </component>
               <component id="5fc1a" class="javax.swing.JLabel">
                 <constraints>
-                  <grid row="4" column="4" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                  <grid row="4" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties>
                   <text value="Replies"/>
@@ -221,7 +205,7 @@
               </component>
               <component id="cfcb" class="javax.swing.JButton" binding="endConnectionToLoadButton" default-binding="true">
                 <constraints>
-                  <grid row="7" column="0" row-span="1" col-span="5" vsize-policy="0" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
+                  <grid row="8" column="0" row-span="1" col-span="4" vsize-policy="0" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties>
                   <text value="End Connection"/>
@@ -229,18 +213,44 @@
               </component>
               <hspacer id="7b047">
                 <constraints>
-                  <grid row="1" column="2" row-span="1" col-span="2" vsize-policy="1" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false">
+                  <grid row="1" column="2" row-span="1" col-span="1" vsize-policy="1" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false">
                     <preferred-size width="10" height="-1"/>
                   </grid>
                 </constraints>
               </hspacer>
               <vspacer id="8e91e">
                 <constraints>
-                  <grid row="6" column="0" row-span="1" col-span="5" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false">
+                  <grid row="7" column="0" row-span="1" col-span="4" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false">
                     <preferred-size width="-1" height="10"/>
                   </grid>
                 </constraints>
               </vspacer>
+              <scrollpane id="d96f4">
+                <constraints>
+                  <grid row="5" column="0" row-span="2" col-span="2" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties/>
+                <border type="none"/>
+                <children>
+                  <component id="85444" class="javax.swing.JTable" binding="pendingRequestsTable">
+                    <constraints/>
+                    <properties/>
+                  </component>
+                </children>
+              </scrollpane>
+              <scrollpane id="a6ef1">
+                <constraints>
+                  <grid row="5" column="3" row-span="2" col-span="1" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties/>
+                <border type="none"/>
+                <children>
+                  <component id="15270" class="javax.swing.JTable" binding="processedRequestsTable">
+                    <constraints/>
+                    <properties/>
+                  </component>
+                </children>
+              </scrollpane>
             </children>
           </grid>
           <component id="25844" class="javax.swing.JLabel" binding="clientId">
