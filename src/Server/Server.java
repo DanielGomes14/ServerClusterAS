@@ -11,7 +11,7 @@ import java.io.IOException;
 public class Server {
     private final ServerGUI gui;
     private ServerAux serverAux;
-    private int port;
+    private int serverId;
     private  ClientAux monitorCon;
     private final int monitorPort = 5000;
     private final IFIFO_Server mFifo;
@@ -37,6 +37,11 @@ public class Server {
 
     public ServerGUI getGui() {
         return this.gui;
+    }
+
+    public void setServerId(int serverId) {
+        this.serverId = serverId;
+        this.gui.setServerId(serverId);
     }
 
     public void processRequest(Message msg) {

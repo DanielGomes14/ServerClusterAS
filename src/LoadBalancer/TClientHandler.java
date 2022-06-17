@@ -4,6 +4,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
+import Communication.ClientAux;
 import Communication.Message;
 import Communication.MessageTopic;
 import Server.ServerInfo;
@@ -15,6 +16,7 @@ public class TClientHandler implements Runnable{
     private  final Socket clientSocket;
     private  final LoadBalancer lb;
     private ObjectInputStream in = null;
+    private final String hostname = "localhost";
     private ObjectOutputStream out = null;
 
     public TClientHandler(Socket socket, LoadBalancer lb) {
@@ -36,8 +38,14 @@ public class TClientHandler implements Runnable{
                     if (msg.getTopic() != 4)
                         System.out.println(msg.getTopic());
                     switch (msg.getTopic()){
-                        case MessageTopic.CLIENT_REGISTER:
+                        case MessageTopic.LB_REGISTER:
+                            this.lb.setLBId(msg.getServerId());
+                            break;
+                        case MessageTopic.CLIENT_REGISTER_PENDING:
                             this.lb.clientRegister(msg);
+                            break;
+                        case MessageTopic.CLIENT_REGISTER_ACCEPTED:
+                            new ClientAux(hostname, msg.getServerPort(), msg).start();
                             break;
                         case MessageTopic.REQUEST:
                             this.lb.clientRequest(msg);

@@ -66,7 +66,17 @@ public class ClientGUI {
     public void setClientPort(int port) {
         try {
             queue.invokeAndWait(() -> {
-                clientPort.setText(String.format("Load Balancer Port: %d", port));
+                clientPort.setText(String.format("Client Port: %d", port));
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void setClientId(int id) {
+        try {
+            queue.invokeAndWait(() -> {
+                clientId.setText(String.format("Client Id: %d", id));
             });
         } catch (Exception e) {
             e.printStackTrace();

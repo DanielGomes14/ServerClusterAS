@@ -19,7 +19,8 @@ public class LoadBalancer {
     private final int monitorPort = 5000;
     private final LoadBalancerGUI gui;
     private Map<Integer, Message> pendingRequests;
-    
+    private int LBId;
+
     public LoadBalancer() {
         this.gui = new LoadBalancerGUI(this);
         this.servers = new HashMap<>();
@@ -114,6 +115,11 @@ public class LoadBalancer {
         request.setServerId(bestServer.getServerId());
         request.setServerPort(bestServer.getServerPort());
         sendServerRequest(request);
+    }
+
+    public void setLBId(int LBId) {
+        this.LBId = LBId;
+        this.gui.setLBId(LBId);
     }
 
     public static void main(String args[]) {

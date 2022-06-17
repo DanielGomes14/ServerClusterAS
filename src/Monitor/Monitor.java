@@ -22,8 +22,10 @@ public class Monitor implements IMonitor, IMonitor_Heartbeat{
     private final Map<Integer, HeartbeatManager> serverHeartbeatThreads;
     private final Map<Integer, HeartbeatManager> LBHeartbeatThreads;
     private final ReentrantLock rl;
-    private int LBCount;
-    private int clientCount;
+    private int serverCount = 0;
+    private int LBCount = 0;
+    private int clientCount = 0;
+    private final Map<Integer, Integer> clients;
     private final MonitorGUI gui;
 
 
@@ -43,6 +45,8 @@ public class Monitor implements IMonitor, IMonitor_Heartbeat{
         this.serverAux = new ServerAux(this, port);
         this.serverAux.start();
 
+        this.clients = new HashMap<>();
+
         this.gui = new MonitorGUI(this);
     }
 
@@ -56,7 +60,7 @@ public class Monitor implements IMonitor, IMonitor_Heartbeat{
         this.rl.unlock();
     }
 
-    public int registerLoadBalancer(Message msg) {
+    public Message registerLoadBalancer(Message msg) {
         int id = -1;
 
         this.rl.lock();
@@ -81,13 +85,18 @@ public class Monitor implements IMonitor, IMonitor_Heartbeat{
 
         this.rl.unlock();
 
-        return id;
+        if (id == -1)
+            return null;
+
+        msg.setServerId(id);
+
+        return msg;
     }
 
-    public void registerNewServer(ServerInfo serverInfo) {
+    public Message registerNewServer(ServerInfo serverInfo) {
         this.rl.lock();
 
-        int id = this.LBCount++;
+        int id = this.serverCount++;
 
         serverInfo.setServerId(id);
 
@@ -98,6 +107,23 @@ public class Monitor implements IMonitor, IMonitor_Heartbeat{
         this.serverHeartbeatThreads.get(id).start();
 
         this.rl.unlock();
+
+        return new Message(MessageTopic.SERVER_REGISTER, id, serverInfo.getServerPort());
+    }
+
+    public Message registerNewClient(Message msg) {
+        this.rl.lock();
+
+        int id = this.clientCount++;
+
+        // store client info such as ports and put in the GUI
+        this.clients.put(id, msg.getServerPort());
+
+        this.rl.unlock();
+
+        msg.setServerId(id);
+        msg.setTopic(MessageTopic.CLIENT_REGISTER_ACCEPTED);
+        return msg;
     }
 
     public void serverDown(int serverId){
@@ -121,8 +147,16 @@ public class Monitor implements IMonitor, IMonitor_Heartbeat{
         // add pending requests to message
         // send message to loadbalancer
         Message msg = new Message();
+<<<<<<< HEAD
         msg.setTopic(MessageTopic.FORWARD_PENDING);
         msg.setPendingRequests(pendingRequeststoRemove);
+=======
+
+        sendMsgToLB(msg);
+    }
+
+    public void sendMsgToLB(Message msg) {
+>>>>>>> fb973ce7eb1090010e27fdc3207a3594624927ab
         ClientAux LB = this.LBs.get(primaryLB);
         if (LB != null) {
             try {
@@ -171,21 +205,12 @@ public class Monitor implements IMonitor, IMonitor_Heartbeat{
 
         this.rl.unlock();
     }
-    
-    public void registerNewClient(Message msg) {
-        this.rl.lock();
-        
-        int id = this.clientCount++;
-        
-        // store client info such as ports and put in the GUI
-//        this.clients.put();
-
-        this.rl.unlock();
-    }
 
     public void requestProcessed(Message msg){
         this.rl.lock();
+
         pendingRequests.remove(msg.getRequestId());
+
         this.rl.unlock();
     }
 
