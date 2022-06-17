@@ -39,13 +39,14 @@ public class Server {
         return this.gui;
     }
 
-    public void processRequest() {
+    public void processRequest(Message msg) {
         //TODO: Check Number of iterations that the server may process
         if(this.mFifo.isFull()){
+            msg.setTopic(MessageTopic.REJECTION);
+            this.monitorCon.sendMsg(msg);
             // reply with that the request cannot be processed at the momment
         }
-        this.mFifo.put(null);
-
+        this.mFifo.put(msg);
         // process com time to sleeps ig
 
         // send to client processed result

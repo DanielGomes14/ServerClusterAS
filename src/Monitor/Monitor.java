@@ -172,7 +172,7 @@ public class Monitor implements IMonitor, IMonitor_Heartbeat{
 
     public void requestProcessed(Message msg){
         this.rl.lock();
-
+        pendingRequests.remove(msg.getRequestId());
         this.rl.unlock();
     }
 

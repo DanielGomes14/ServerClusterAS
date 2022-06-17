@@ -65,7 +65,7 @@ public class LoadBalancer {
         Message highestPriorityRequest = null;
 
         for (Message request : pendingRequests.values()) {
-            if (earliestDeadline < request.getDeadline()) {
+            if (earliestDeadline > request.getDeadline()) {
                 highestPriorityRequest = request;
             }
         }
@@ -78,7 +78,7 @@ public class LoadBalancer {
         ServerInfo bestServer = null;
         
         for (ServerInfo server : msg.getServersInfo().values()) {
-            if (minNI < server.getNI()) {
+            if (minNI > server.getNI()) {
                 bestServer = server;
             }
         }
@@ -89,6 +89,7 @@ public class LoadBalancer {
     public void sendServerRequest(Message msg) {
         ClientAux socket = new ClientAux(hostname, msg.getServerPort(), msg);
         socket.start();
+        //TODO: Close Connection
     }
 
     public void forwardPendingRequests(Message msg) {

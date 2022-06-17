@@ -48,6 +48,11 @@ public class TClientHandler extends Thread {
                             break;
                         case MessageTopic.SERVER_REGISTER:
                             this.monitor.registerNewServer(new ServerInfo(msg.getServerId(), msg.getServerPort(), 0));
+                        case MessageTopic.REQUEST_PROCESSED:
+                            this.monitor.requestProcessed(msg);
+                            break;
+                        case MessageTopic.REJECTION:
+                            //
                             break;
                     }
                     // client requests
