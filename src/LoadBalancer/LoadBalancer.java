@@ -12,10 +12,10 @@ public class LoadBalancer {
     
     private ClientAux monitorCon;
     private Map<Integer, ServerInfo> servers;
-    private final ServerAux serverAux;
+    private ServerAux serverAux;
     private final String hostname = "localhost";
-    private final int port = 5000;
-    private final int monitorPort = 8888;
+    private int port;
+    private final int monitorPort = 5000;
     private final LoadBalancerGUI gui;
     private Map<Integer, Message> pendingRequests;
     
@@ -23,26 +23,24 @@ public class LoadBalancer {
         this.gui = new LoadBalancerGUI(this);
         this.servers = new HashMap<>();
         this.pendingRequests = new HashMap<>();
-        this.serverAux = new ServerAux(this);
     }
 
     public void start(int port) {
-        this.serverAux.setPort(port);
-        new Thread(this.serverAux).start();
-        this.registerInMonitor();
+        this.port = port;
+
+        // start my server
+        this.serverAux = new ServerAux(this, port);
+        this.serverAux.start();
+
+        // start the connection and register in the monitor
+        this.monitorCon = new ClientAux(hostname, monitorPort, new Message(MessageTopic.REGISTER_LB, this.port));
+        this.monitorCon.start();
     }
 
     public void end() {
         this.serverAux.close();
     }
    
-
-    public void registerInMonitor() {
-        this.monitorCon = new ClientAux(hostname, monitorPort);
-        // send msg to Monitor informing that the LB Is running
-        Message msg = new Message(MessageTopic.REGISTER_LB);
-        this.monitorCon.sendMsg(msg);
-    }
 
     public void clientRegister(Message msg) {
         this.monitorCon.sendMsg(msg);
@@ -80,8 +78,8 @@ public class LoadBalancer {
 	}
 
     public void sendServerRequest(Message msg) {
-        ClientAux socket = new ClientAux(hostname, msg.getServerPort());
-        socket.sendMsg(msg);
+        ClientAux socket = new ClientAux(hostname, msg.getServerPort(), msg);
+        socket.start();
     }
 
     public void forwardPendingRequests(Message msg) {

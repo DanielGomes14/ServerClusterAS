@@ -9,9 +9,11 @@ public class TClientHandler implements Runnable {
 
     private  final Socket clientSocket;
     private ObjectInputStream in = null;
+    private final Server server;
 
-    public TClientHandler(Socket socket) {
+    public TClientHandler(Socket socket, Server server) {
         this.clientSocket = socket;
+        this.server = server;
     }
 
 

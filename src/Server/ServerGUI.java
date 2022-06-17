@@ -3,6 +3,8 @@ package Server;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 public class ServerGUI {
     private final EventQueue queue;
@@ -13,20 +15,51 @@ public class ServerGUI {
     private JPanel RequestPanel;
     private JTable pendingRequestsTable;
     private JTable processedRequestsTable;
-    private JButton endConnectionToLoadButton;
+    private JButton endConnection;
     private JLabel serverId;
     private JComboBox comboBox1;
     private JPanel panel1;
+    private JLabel lbPort;
+    private JLabel clientPort;
 
     public ServerGUI(Server server) {
-        this.queue = new EventQueue();
         this.server = server;
+        this.queue = new EventQueue();
 
         JFrame jf = new JFrame();
         jf.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         jf.setSize(800, 500);
         jf.add(panel1);
         jf.setVisible(true);
+
+        RequestPanel.setVisible(false);
+
+        connectButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                LBConnectPanel.setVisible(false);
+                RequestPanel.setVisible(true);
+                server.start();
+            }
+        });
+        endConnection.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                server.end();
+                RequestPanel.setVisible(false);
+                LBConnectPanel.setVisible(true);
+            }
+        });
+    }
+
+    public void setServerPort(int port) {
+        try {
+            queue.invokeAndWait(() -> {
+                clientPort.setText(String.format("My Server Port: %d", port));
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     {
@@ -103,9 +136,9 @@ public class ServerGUI {
         final JLabel label3 = new JLabel();
         label3.setText("Processed Requests");
         panel3.add(label3, new com.intellij.uiDesigner.core.GridConstraints(0, 4, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_WEST, com.intellij.uiDesigner.core.GridConstraints.FILL_NONE, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        endConnectionToLoadButton = new JButton();
-        endConnectionToLoadButton.setText("End Connection to Load Balancer");
-        panel3.add(endConnectionToLoadButton, new com.intellij.uiDesigner.core.GridConstraints(2, 0, 1, 5, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_NONE, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        endConnection = new JButton();
+        endConnection.setText("End Connection to Load Balancer");
+        panel3.add(endConnection, new com.intellij.uiDesigner.core.GridConstraints(2, 0, 1, 5, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_NONE, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         serverId = new JLabel();
         serverId.setText("Server Id");
         panel2.add(serverId, new com.intellij.uiDesigner.core.GridConstraints(1, 1, 1, 3, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_NONE, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));

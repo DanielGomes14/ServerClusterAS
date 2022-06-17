@@ -5,17 +5,18 @@ import java.net.Socket;
 
 import Communication.Message;
 
-public class TClientHandler implements  Runnable{
+public class TClientHandler extends Thread {
 
     private  final Socket clientSocket;
     private ObjectInputStream in = null;
+    private final Client client;
 
-    public TClientHandler(Socket socket) {
+    public TClientHandler(Socket socket, Client client) {
         this.clientSocket = socket;
+        this.client = client;
     }
 
 
-    @Override
     public void run() {
         try {
             // get the input stream of client

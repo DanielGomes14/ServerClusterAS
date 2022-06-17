@@ -19,22 +19,18 @@ public class ServerAux extends Thread {
             this.port = serverSocket.getLocalPort();
             this.client.getGui().setClientPort(port);
 
-            // running infinite loop for getting
-            // client request
+            // running infinite loop for getting client requests
             while (true) {
-                // socket object to receive incoming client
-                // requests
-                Socket client = serverSocket.accept();
+                // socket object to receive incoming client requests
+                Socket socketClient = serverSocket.accept();
 
-                // Displaying that new client is connected
-                // to server
+                // Displaying that new client is connected to server
                 System.out.println("New client connected");
 
                 // create a new thread object
-                TClientHandler clientSock = new TClientHandler(client);
+                TClientHandler clientSock = new TClientHandler(socketClient, client);
 
-                // This thread will handle the client
-                // separately
+                // This thread will handle the client separately
                 new Thread(clientSock).start();
             }
         } catch (Exception e) {

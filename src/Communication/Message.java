@@ -41,6 +41,11 @@ public class Message implements Serializable {
     public Message() {
     }
 
+    public Message(int topic, int port) {
+        this.topic = topic;
+        this.serverPort = port;
+    }
+
 
     public Map<Integer, ServerInfo> getServersInfo() {
         return serversInfo;

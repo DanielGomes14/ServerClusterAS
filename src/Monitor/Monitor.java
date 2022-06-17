@@ -2,7 +2,6 @@ package Monitor;
 
 import Communication.ClientAux;
 import Communication.Message;
-import Communication.ServerAux;
 import Server.ServerInfo;
 
 import java.util.ArrayList;
@@ -19,7 +18,7 @@ public class Monitor implements IMonitor, IMonitor_Heartbeat{
     /** Requests waiting to be assigned to a server. */
     private final Map<Integer, List<Message>> pendingRequests;
     private final String hostname = "localhost";
-    private final int port = 9000;
+    private final int port = 5000;
     private final ServerAux serverAux;
     private final Map<Integer, HeartbeatManager> serverHeartbeatThreads;
     private final Map<Integer, HeartbeatManager> LBHeartbeatThreads;
@@ -27,7 +26,9 @@ public class Monitor implements IMonitor, IMonitor_Heartbeat{
     private int serverCount;
     private int LBCount;
     private int clientCount;
-    
+    private final MonitorGUI gui;
+
+
     private final Map<Integer, ClientAux> LBs;
     private int primaryLB;
 
@@ -41,11 +42,14 @@ public class Monitor implements IMonitor, IMonitor_Heartbeat{
         this.serverHeartbeatThreads = new HashMap<>();
         this.LBHeartbeatThreads = new HashMap<>();
 
-        this.serverAux = new ServerAux();
+        this.serverAux = new ServerAux(this, port);
+        this.serverAux.start();
+
+        this.gui = new MonitorGUI(this);
     }
 
-    public void start() {
-        this.serverAux.start(port);
+    public MonitorGUI getGui() {
+        return this.gui;
     }
 
     public void registerNewServer(ServerInfo serverInfo) {
@@ -55,6 +59,11 @@ public class Monitor implements IMonitor, IMonitor_Heartbeat{
         
         this.serverHeartbeatThreads.put(this.serverCount, new HeartbeatManager(
             this.hostname, this.port, this.serverCount, true, this));
+        try {
+            Thread.sleep(200);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         this.serverHeartbeatThreads.get(this.serverCount).start();
 
         this.serverCount++;
@@ -83,11 +92,10 @@ public class Monitor implements IMonitor, IMonitor_Heartbeat{
 
         this.rl.lock();
 
-        id = this.LBCount++;
-
-
         if (this.LBs.size() <= 2) {
-            ClientAux con = new ClientAux(this.hostname, port);
+            id = this.LBCount++;
+
+            ClientAux con = new ClientAux(this.hostname, msg.getServerPort());
             new Thread(con).start();
 
             this.LBs.put(id, con);
@@ -98,14 +106,18 @@ public class Monitor implements IMonitor, IMonitor_Heartbeat{
             }
 
             this.LBHeartbeatThreads.put(id, new HeartbeatManager(
-                this.hostname, this.port, id, false, this));
+                this.hostname, msg.getServerPort(), id, false, this));
+            try {
+                Thread.sleep(200);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             this.LBHeartbeatThreads.get(id).start();
         }
 
         this.rl.unlock();
 
         return id;
-
     }
 
     public void serverDown(int serverId){
@@ -166,19 +178,6 @@ public class Monitor implements IMonitor, IMonitor_Heartbeat{
         this.rl.unlock();
     }
 
-
-    public void registerLoadBalancer() {
-        this.rl.lock();
-
-        int id = this.clientCount++;
-
-        // add this lb id to the list, maybe create a loadbalancersinfo class aswell
-        // with id and ClientAux connection
-        // but here only add the id
-//        this.LBs.add();
-
-        this.rl.unlock();
-    }
 
     public Map<Integer,ServerInfo> getServersInfo(){
         return servers;

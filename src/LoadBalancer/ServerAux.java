@@ -1,25 +1,24 @@
 package LoadBalancer;
 
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 
 
 public class ServerAux extends Thread {
 
-    private int port;
+    private final int port;
     private ServerSocket serverSocket;
     private final LoadBalancer lb;
 
 
-    public ServerAux(LoadBalancer lb) {
+    public ServerAux(LoadBalancer lb, int port) {
         this.lb = lb;
+        this.port = port;
     }
 
     public void run() {
         try {
-            serverSocket = new ServerSocket(port);
+            serverSocket = new ServerSocket(this.port);
 
             // running infinite loop for getting
             // client request
@@ -50,9 +49,5 @@ public class ServerAux extends Thread {
         } catch (Exception e) {
             System.err.println(e);
         }
-    }
-
-    public void setPort(int port) {
-        this.port = port;
     }
 }

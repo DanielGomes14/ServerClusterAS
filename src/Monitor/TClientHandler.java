@@ -2,7 +2,6 @@ package Monitor;
 
 import Communication.Message;
 import Communication.MessageTopic;
-import LoadBalancer.LoadBalancer;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -11,7 +10,7 @@ import java.net.Socket;
 
 import static Communication.MessageTopic.HEARTBEAT_ACK;
 
-public class TClientHandler implements Runnable{
+public class TClientHandler extends Thread {
 
     private  final Socket clientSocket;
     private  final Monitor monitor;
@@ -23,30 +22,31 @@ public class TClientHandler implements Runnable{
         this.monitor = monitor;
     }
 
-    @Override
     public void run() {
         try {
             // get the input stream of client
             in =  new ObjectInputStream(clientSocket.getInputStream());
             out = new ObjectOutputStream(clientSocket.getOutputStream());
-            Message message;
+            Message msg;
 
             while (true) {
                 try {
-                    message = (Message) in.readObject();
-                    switch ((message.getTopic())){
-                        case MessageTopic.HEARTBEAT:
-                            Message m = new Message(HEARTBEAT_ACK);
-                            sendMsg(m);
-                            break;
+                    msg = (Message) in.readObject();
+                    System.out.println(msg.getTopic());
+                    switch ((msg.getTopic())){
                         case MessageTopic.REQUEST:
-                            this.monitor.receiveNewRequest(message);
-                            Message msg = new Message(MessageTopic.SERVERS_INFO);
+                            // receive request from a client
+                            this.monitor.receiveNewRequest(msg);
+                            // send information of current servers
+                            // plus the request itself
+                            // to the primary lb
+                            msg.setTopic(MessageTopic.SERVERS_INFO);
                             msg.setServersInfo(this.monitor.getServersInfo());
                             sendMsg(msg);
                             break;
                         case MessageTopic.REGISTER_LB:
-                            this.monitor.registerLoadBalancer(message);
+                            this.monitor.registerLoadBalancer(msg);
+                            break;
                     }
                     // client requests
                     // monitor heartbeat

@@ -1,27 +1,25 @@
 package Server;
 
-import Client.TClientHandler;
-
-import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 
 
-public class ServerAux {
+public class ServerAux extends Thread  {
 
     private int port;
-    private InetAddress addr;
+    private final Server server;
     private ServerSocket serverSocket;
 
 
-    public ServerAux() {
+    public ServerAux(Server server) {
+        this.server = server;
     }
 
-    public void start() {
+    public void run() {
         try {
-            serverSocket = new ServerSocket();
+            serverSocket = new ServerSocket(0);
             this.port = serverSocket.getLocalPort();
-            this.addr = serverSocket.getInetAddress();
+            this.server.getGui().setServerPort(port);
 
             // running infinite loop for getting
             // client request
@@ -35,7 +33,7 @@ public class ServerAux {
                 System.out.println("New client connected");
 
                 // create a new thread object
-                TClientHandler clientSock = new TClientHandler(client);
+                TClientHandler clientSock = new TClientHandler(client, server);
 
                 // This thread will handle the client
                 // separately

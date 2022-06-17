@@ -1,5 +1,9 @@
 package Client;
 
+import Communication.ClientAux;
+import Communication.Message;
+import Communication.MessageTopic;
+
 import java.awt.*;
 
 public class Client {
@@ -7,11 +11,13 @@ public class Client {
     private final ClientGUI gui;
     private final String hostname = "locahost";
     private final ServerAux serverAux;
+    private ClientAux client;
 
     public Client() {
         this.queue = new EventQueue();
         this.serverAux = new ServerAux(this);
         this.gui = new ClientGUI(this);
+        // connect to LB on the given
     }
 
     public ClientGUI getGui() {
@@ -19,8 +25,11 @@ public class Client {
     }
 
     public void start(int port) {
-        new Thread(this.serverAux).start();
-        // connect to LB on the given port
+        serverAux.start();
+
+        this.client = new ClientAux(hostname, port, new Message(MessageTopic.CLIENT_REGISTER));
+        // connect to LB on the given
+        client.start();
     }
 
     public void end() {

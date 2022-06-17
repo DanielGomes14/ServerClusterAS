@@ -8,26 +8,33 @@ import FIFO.MFIFO;
 
 public class Server {
     private final ServerGUI gui;
-    private final ServerAux server;
+    private final ServerAux serverAux;
     private int port;
-    private ClientAux monitorCon;
-    private final int monitorPort = 9000;
+    private final ClientAux monitorCon;
+    private final int monitorPort = 5000;
     private final IFIFO_Server mFifo;
     private final String hostname = "localhost";
     private final int queueSize = 3;
 
 
     public Server() {
-        this.server = new ServerAux();
-        this.gui = new ServerGUI(this);
+        this.serverAux = new ServerAux(this);
         this.mFifo = new MFIFO(queueSize);
         for (int i = 1; i <= queueSize; i++)
             new TComputeRequest(mFifo,this).start();
+        this.gui = new ServerGUI(this);
+        this.monitorCon = new ClientAux(this.hostname, this.monitorPort, new Message(MessageTopic.SERVER_REGISTER));
     }
 
-    public void startServer() {
-        this.monitorCon = new ClientAux(this.hostname, this.monitorPort);
-        this.server.start();
+    public ServerGUI getGui() {
+        return this.gui;
+    }
+
+    public void start() {
+        new Thread(this.serverAux).start();
+        
+        this.monitorCon.start();
+
     }
 
     public void registerInMonitor() {
@@ -56,10 +63,16 @@ public class Server {
     public  void sendtoMonitor(Message msg){
         this.monitorCon.sendMsg(msg);
     }
+
     public void sendToClient(Message result, int port) {
         ClientAux socket = new ClientAux(this.hostname, port);
         socket.sendMsg(result);
     }
+
+    public void end() {
+        this.serverAux.close();
+    }
+
 
     public static void main(String[] args) {
         new Server();        

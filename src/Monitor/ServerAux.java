@@ -1,23 +1,22 @@
 package Monitor;
 
-import LoadBalancer.LoadBalancer;
-
 import java.net.ServerSocket;
 import java.net.Socket;
 
 
-public class ServerAux {
+public class ServerAux extends Thread {
 
-    private int port;
+    private final int port;
     private ServerSocket serverSocket;
     private final Monitor monitor;
 
 
-    public ServerAux(Monitor monitor) {
+    public ServerAux(Monitor monitor, int port) {
         this.monitor = monitor;
+        this.port = port;
     }
 
-    public void start(int port) {
+    public void run() {
         try {
             serverSocket = new ServerSocket(port);
 

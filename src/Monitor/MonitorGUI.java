@@ -9,7 +9,6 @@ import java.awt.*;
 
 public class MonitorGUI {
     private final EventQueue queue;
-    // TODO: change to an interface
     private final Monitor monitor;
 
     private JTable clientsTable;

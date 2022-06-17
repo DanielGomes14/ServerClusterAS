@@ -33,11 +33,8 @@ public class TClientHandler implements Runnable{
             while (true) {
                 try {
                     msg = (Message) in.readObject();
+                    System.out.println(msg.getTopic());
                     switch (msg.getTopic()){
-                        case MessageTopic.HEARTBEAT:
-                            Message m = new Message(HEARTBEAT_ACK);
-                            sendMsg(m);
-                            break;
                         case MessageTopic.CLIENT_REGISTER:
                             this.lb.clientRegister(msg);
                             break;
@@ -45,7 +42,7 @@ public class TClientHandler implements Runnable{
                             this.lb.clientRequest(msg);
                             break;
                         case MessageTopic.SERVERS_INFO:
-                            this.lb.forwardMessage(msg);
+                            this.lb.forwardMessageToServer(msg);
                             break;
                     }
                     // client requests
