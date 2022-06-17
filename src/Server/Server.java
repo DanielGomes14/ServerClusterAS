@@ -38,17 +38,18 @@ public class Server {
     }
 
     public void registerInMonitor() {
-        Message msg = new Message(MessageTopic.REGISTER_LB);
+        Message msg = new Message(MessageTopic.SERVER_REGISTER);
         this.monitorCon.sendMsg(msg);
     }
 
-    public void processRequest() {
+    public void processRequest(Message msg) {
         //TODO: Check Number of iterations that the server may process
         if(this.mFifo.isFull()){
+            msg.setTopic(MessageTopic.REJECTION);
+            this.monitorCon.sendMsg(msg);
             // reply with that the request cannot be processed at the momment
         }
-        this.mFifo.put(null);
-
+        this.mFifo.put(msg);
         // process com time to sleeps ig
 
         // send to client processed result
@@ -70,6 +71,9 @@ public class Server {
     }
 
     public void end() {
+        Message msg = new Message();
+        msg.setTopic(MessageTopic.REMOVE_SERVER);
+        this.monitorCon.sendMsg(msg);
         this.serverAux.close();
     }
 

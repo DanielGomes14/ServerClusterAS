@@ -47,6 +47,19 @@ public class TClientHandler extends Thread {
                         case MessageTopic.REGISTER_LB:
                             this.monitor.registerLoadBalancer(msg);
                             break;
+                        case MessageTopic.REMOVE_LB:
+                            //TODO: Check how to get  lb ID
+                            //this.monitor.LBDown(msg);
+                            break;
+                        case MessageTopic.REMOVE_SERVER:
+                            //TODO: Check how to get server id
+                            //this.monitor.serverDown(msg);
+                        case MessageTopic.REQUEST_PROCESSED:
+                            this.monitor.requestProcessed(msg);
+                            break;
+                        case MessageTopic.REJECTION:
+                            //
+                            break;
                     }
                     // client requests
                     // monitor heartbeat

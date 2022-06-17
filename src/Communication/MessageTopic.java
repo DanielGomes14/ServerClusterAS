@@ -13,5 +13,9 @@ public class MessageTopic {
     public static final int CLIENT_REGISTER = 8;
     public static final int REQUEST_PROCESSED = 9;
     public static final int SERVER_REGISTER = 10;
+    public static final int REMOVE_LB = 11;
+    public static final int REMOVE_SERVER = 12;
+
+
 
 }
