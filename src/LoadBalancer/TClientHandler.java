@@ -33,7 +33,8 @@ public class TClientHandler implements Runnable{
             while (true) {
                 try {
                     msg = (Message) in.readObject();
-                    System.out.println(msg.getTopic());
+                    if (msg.getTopic() != 4)
+                        System.out.println(msg.getTopic());
                     switch (msg.getTopic()){
                         case MessageTopic.CLIENT_REGISTER:
                             this.lb.clientRegister(msg);
@@ -44,6 +45,10 @@ public class TClientHandler implements Runnable{
                         case MessageTopic.SERVERS_INFO:
                             this.lb.forwardMessageToServer(msg);
                             break;
+                        case MessageTopic.FORWARD_PENDING:
+                            for(Message m: msg.getPendingRequests()){
+                                this.lb.clientRequest(m);
+                            }
                     }
                     // client requests
                     // monitor heartbeat

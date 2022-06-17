@@ -2,13 +2,12 @@ package Monitor;
 
 import Communication.Message;
 import Communication.MessageTopic;
+import Server.ServerInfo;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
-
-import static Communication.MessageTopic.HEARTBEAT_ACK;
 
 public class TClientHandler extends Thread {
 
@@ -44,21 +43,16 @@ public class TClientHandler extends Thread {
                             msg.setServersInfo(this.monitor.getServersInfo());
                             sendMsg(msg);
                             break;
-                        case MessageTopic.REGISTER_LB:
+                        case MessageTopic.LB_REGISTER:
                             this.monitor.registerLoadBalancer(msg);
                             break;
-                        case MessageTopic.REMOVE_LB:
-                            //TODO: Check how to get  lb ID
-                            //this.monitor.LBDown(msg);
-                            break;
-                        case MessageTopic.REMOVE_SERVER:
-                            //TODO: Check how to get server id
-                            //this.monitor.serverDown(msg);
+                        case MessageTopic.SERVER_REGISTER:
+                            this.monitor.registerNewServer(new ServerInfo(msg.getServerId(), msg.getServerPort(), 0));
                         case MessageTopic.REQUEST_PROCESSED:
                             this.monitor.requestProcessed(msg);
                             break;
                         case MessageTopic.REJECTION:
-                            //
+                            this.monitor.requestRejected(msg);
                             break;
                     }
                     // client requests

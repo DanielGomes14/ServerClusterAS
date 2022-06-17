@@ -5,10 +5,8 @@ import Communication.Message;
 import Communication.MessageTopic;
 import Server.ServerInfo;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.IOException;
+import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class Monitor implements IMonitor, IMonitor_Heartbeat{
@@ -17,14 +15,13 @@ public class Monitor implements IMonitor, IMonitor_Heartbeat{
     private final Map<Integer, ServerInfo> servers;
 
     /** Requests waiting to be assigned to a server. */
-    private final Map<Integer, List<Message>> pendingRequests;
+    private final Map<Integer, Message> pendingRequests;
     private final String hostname = "localhost";
     private final int port = 5000;
     private final ServerAux serverAux;
     private final Map<Integer, HeartbeatManager> serverHeartbeatThreads;
     private final Map<Integer, HeartbeatManager> LBHeartbeatThreads;
     private final ReentrantLock rl;
-    private int serverCount;
     private int LBCount;
     private int clientCount;
     private final MonitorGUI gui;
@@ -53,38 +50,9 @@ public class Monitor implements IMonitor, IMonitor_Heartbeat{
         return this.gui;
     }
 
-    public void registerNewServer(ServerInfo serverInfo) {
-        this.rl.lock();
-        
-        this.servers.put(this.serverCount, serverInfo);
-        
-        this.serverHeartbeatThreads.put(this.serverCount, new HeartbeatManager(
-            this.hostname, this.port, this.serverCount, true, this));
-        try {
-            Thread.sleep(200);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        this.serverHeartbeatThreads.get(this.serverCount).start();
-
-        this.serverCount++;
-
-        this.rl.unlock();
-    }
-
     public  void receiveNewRequest(Message message){
         this.rl.lock();
-        List<Message> lstmessages;
-        if(this.pendingRequests.containsKey(message.getRequestId())){
-            lstmessages = this.pendingRequests.get(message.getRequestId());
-            lstmessages.add(message);
-        }
-        else{
-            lstmessages =  new ArrayList<Message>();
-            lstmessages.add(message);
-        }
-        this.pendingRequests.put(message.getRequestId(), lstmessages);
-
+        this.pendingRequests.put(message.getRequestId(), message);
         this.rl.unlock();
     }
 
@@ -97,7 +65,7 @@ public class Monitor implements IMonitor, IMonitor_Heartbeat{
             id = this.LBCount++;
 
             ClientAux con = new ClientAux(this.hostname, msg.getServerPort());
-            new Thread(con).start();
+            con.start();
 
             this.LBs.put(id, con);
 
@@ -108,11 +76,6 @@ public class Monitor implements IMonitor, IMonitor_Heartbeat{
 
             this.LBHeartbeatThreads.put(id, new HeartbeatManager(
                 this.hostname, msg.getServerPort(), id, false, this));
-            try {
-                Thread.sleep(200);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
             this.LBHeartbeatThreads.get(id).start();
         }
 
@@ -121,11 +84,36 @@ public class Monitor implements IMonitor, IMonitor_Heartbeat{
         return id;
     }
 
+    public void registerNewServer(ServerInfo serverInfo) {
+        this.rl.lock();
+
+        int id = this.LBCount++;
+
+        serverInfo.setServerId(id);
+
+        this.servers.put(id, serverInfo);
+
+        this.serverHeartbeatThreads.put(id, new HeartbeatManager(
+                this.hostname, serverInfo.getServerPort(), id, true, this));
+        this.serverHeartbeatThreads.get(id).start();
+
+        this.rl.unlock();
+    }
+
     public void serverDown(int serverId){
         this.rl.lock();
 
         servers.remove(serverId);
-        List<Message> pendingRequests = this.pendingRequests.remove(serverId);
+        // add to list the pending requests
+        ArrayList<Message> pendingRequeststoRemove = new ArrayList<>();
+
+        for(Message removemsg: this.pendingRequests.values()){
+            if(removemsg.getServerId() == serverId)
+                pendingRequeststoRemove.add(removemsg);
+        }
+        // remove from pending requests data structure
+        for(Message msg: pendingRequeststoRemove) this.pendingRequests.remove(msg.getRequestId());
+
         serverHeartbeatThreads.remove(serverId);
 
         this.rl.unlock();
@@ -134,12 +122,15 @@ public class Monitor implements IMonitor, IMonitor_Heartbeat{
         // send message to loadbalancer
         Message msg = new Message();
         msg.setTopic(MessageTopic.FORWARD_PENDING);
-
-        msg.setPendingRequests((ArrayList<Message>) this.pendingRequests.get(serverId));
-);
+        msg.setPendingRequests(pendingRequeststoRemove);
         ClientAux LB = this.LBs.get(primaryLB);
-        if (LB != null)
-            LB.sendMsg(msg);
+        if (LB != null) {
+            try {
+                LB.sendMsg(msg);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
 
@@ -147,7 +138,9 @@ public class Monitor implements IMonitor, IMonitor_Heartbeat{
         this.rl.lock();
 
         LBHeartbeatThreads.remove(LBId);
-        
+
+
+
         this.LBs.remove(LBId);
 
         if (LBId == primaryLB){
@@ -159,6 +152,19 @@ public class Monitor implements IMonitor, IMonitor_Heartbeat{
                 if (activeLBId != null) {
                     primaryLB = activeLBId;
                     // send pending
+                    Message msg = new Message();
+                    msg.setTopic(MessageTopic.FORWARD_PENDING);
+                    msg.setPendingRequests((ArrayList<Message>) pendingRequests.values());
+                    // clear pending requests
+                    pendingRequests.clear();
+                    ClientAux LB = this.LBs.get(primaryLB);
+                    if (LB != null) {
+                        try {
+                            LB.sendMsg(msg);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
                 }
             }
         }
@@ -178,6 +184,12 @@ public class Monitor implements IMonitor, IMonitor_Heartbeat{
     }
 
     public void requestProcessed(Message msg){
+        this.rl.lock();
+        pendingRequests.remove(msg.getRequestId());
+        this.rl.unlock();
+    }
+
+    public void requestRejected(Message msg){
         this.rl.lock();
         pendingRequests.remove(msg.getRequestId());
         this.rl.unlock();

@@ -8,4 +8,7 @@ public interface IFIFO_Server {
     Message get();
     boolean isFull();
     boolean isEmpty();
+
+    boolean increaseNICounter(int ni);
+    void decreaseNICounter(int ni);
 }

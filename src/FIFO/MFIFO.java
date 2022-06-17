@@ -16,7 +16,7 @@ public class MFIFO implements  IFIFO_Server{
     private final ReentrantLock rl;
     private final Condition cNotFull;
     private final Condition cNotEmpty;
-
+    private int niCounter;
 
     public MFIFO(int size){
         this.size = size;
@@ -24,6 +24,7 @@ public class MFIFO implements  IFIFO_Server{
         this.rl = new ReentrantLock();
         this.cNotEmpty = rl.newCondition();
         this.cNotFull = rl.newCondition();
+        this.niCounter = 0;
     }
 
     public void put(Message request) {
@@ -41,6 +42,22 @@ public class MFIFO implements  IFIFO_Server{
         }
     }
 
+    public boolean increaseNICounter(int ni){
+        boolean success = true;
+        rl.lock();
+        if(this.niCounter + ni > 20) {
+            success = false;
+        }
+        else
+            this.niCounter+=ni;
+        rl.unlock();
+        return  success;
+    }
+    public void decreaseNICounter(int ni){
+        rl.lock();
+        this.niCounter = ni;
+        rl.unlock();
+    }
     public Message get() {
         try{
             rl.lock();
@@ -64,7 +81,6 @@ public class MFIFO implements  IFIFO_Server{
         this.rl.unlock();
         return res;
     }
-
     public boolean isEmpty() {
         this.rl.lock();
         boolean res = count == 0;

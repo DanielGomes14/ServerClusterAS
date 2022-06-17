@@ -21,10 +21,9 @@ public class HeartbeatManager extends  Thread {
 
 
     public boolean sendHeartBeat(Message msg){
-        try{
+        try {
             clientAux.sendMsg(msg);
-        }
-        catch (Exception e){
+        } catch (Exception e){
             System.out.println(e.toString());
             return false;
         }
@@ -34,6 +33,7 @@ public class HeartbeatManager extends  Thread {
     @Override
     public void run() {
         clientAux.startConnection();
+
         Message heartbeatMessage = new Message(MessageTopic.HEARTBEAT);
 
         while (sendHeartBeat(heartbeatMessage)){
@@ -43,8 +43,8 @@ public class HeartbeatManager extends  Thread {
                 System.out.println(ex.toString());
             }
         }
-        // Inform Monitor of Server Failure
 
+        // Inform Monitor of Server Failure
         if (isServer)
             this.monitor.serverDown(serviceId);
         else

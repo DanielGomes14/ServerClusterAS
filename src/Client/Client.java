@@ -9,32 +9,34 @@ import java.awt.*;
 public class Client {
     private final EventQueue queue;
     private final ClientGUI gui;
-    private final String hostname = "locahost";
-    private final ServerAux serverAux;
-    private ClientAux client;
+    private final String hostname = "localhost";
+    private ServerAux serverAux;
+    private ClientAux clientAux;
 
     public Client() {
         this.queue = new EventQueue();
-        this.serverAux = new ServerAux(this);
         this.gui = new ClientGUI(this);
-        // connect to LB on the given
+    }
+
+    public void start(int LBPort) {
+        // start my server and
+        // connect to LB on the given port and register clientAux
+        this.serverAux = new ServerAux(this, hostname, LBPort);
+        this.serverAux.start();
+    }
+
+    public void end() {
+        this.serverAux.close();
     }
 
     public ClientGUI getGui() {
         return this.gui;
     }
 
-    public void start(int port) {
-        serverAux.start();
+    public ClientAux getClientAux() { return this.clientAux; };
 
-        this.client = new ClientAux(hostname, port, new Message(MessageTopic.CLIENT_REGISTER));
-        // connect to LB on the given
-        client.start();
-    }
+    public void setClientAux(ClientAux clientAux) { this.clientAux = clientAux; };
 
-    public void end() {
-        this.serverAux.close();
-    }
 
     public static void main(String[] args) {
         new Client();

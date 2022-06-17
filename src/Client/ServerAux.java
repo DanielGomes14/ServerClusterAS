@@ -1,16 +1,24 @@
 package Client;
 
+import Communication.ClientAux;
+import Communication.Message;
+import Communication.MessageTopic;
+
 import java.net.ServerSocket;
 import java.net.Socket;
 
 
 public class ServerAux extends Thread {
+    private final String hostname;
     private int port;
+    private final int LBPort;
     private final Client client;
     private ServerSocket serverSocket;
 
-    public ServerAux(Client client) {
+    public ServerAux(Client client, String hostname, int LBPort) {
         this.client = client;
+        this.hostname = hostname;
+        this.LBPort = LBPort;
     }
 
     public void run() {
@@ -18,6 +26,10 @@ public class ServerAux extends Thread {
             serverSocket = new ServerSocket(0);
             this.port = serverSocket.getLocalPort();
             this.client.getGui().setClientPort(port);
+
+            this.client.setClientAux(new ClientAux(this.hostname, this.LBPort,
+                    new Message(MessageTopic.CLIENT_REGISTER)));
+            this.client.getClientAux().start();
 
             // running infinite loop for getting client requests
             while (true) {
