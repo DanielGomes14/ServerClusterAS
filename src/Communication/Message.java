@@ -1,6 +1,8 @@
 package Communication;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import Server.ServerInfo;
@@ -23,6 +25,8 @@ public class Message implements Serializable {
 
     private Map<Integer, ServerInfo> serversInfo;
 
+    /** When a Server/LB crashes this variable will be used to send a batch of all pending Requests**/
+    private List<Message> pendingRequests;
     public Message(int topic) {
         this.topic = topic;
     }
@@ -65,7 +69,13 @@ public class Message implements Serializable {
     public void setTopic(int topic) {
         this.topic = topic;
     }
-    
+
+    public  void setPendingRequests(ArrayList<Message> pending){
+        this.pendingRequests = pending;
+    }
+    public  List<Message> getPendingRequests(){
+        return this.pendingRequests;
+    }
 
     public int getRequestId() {
         return requestId;

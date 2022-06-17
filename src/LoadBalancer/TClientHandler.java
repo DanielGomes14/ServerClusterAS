@@ -53,6 +53,10 @@ public class TClientHandler extends Thread {
                         case MessageTopic.SERVERS_INFO:
                             this.lb.forwardMessageToServer(msg);
                             break;
+                        case MessageTopic.FORWARD_PENDING:
+                            for(Message m: msg.getPendingRequests()){
+                                this.lb.clientRequest(m);
+                            }
                     }
                     // client requests
                     // monitor heartbeat

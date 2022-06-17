@@ -67,7 +67,7 @@ public class TClientHandler extends Thread {
                             this.monitor.sendMsgToLB(this.monitor.registerNewClient(msg));
                             break;
                         case MessageTopic.REJECTION:
-                            //
+                            this.monitor.requestRejected(msg);
                             break;
                     }
                     // client requests

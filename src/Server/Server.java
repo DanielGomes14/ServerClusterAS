@@ -32,9 +32,9 @@ public class Server {
         this.serverAux.start();
     }
 
-    public ClientAux getMonitorCon() { return this.monitorCon; };
+    public ClientAux getMonitorCon() { return this.monitorCon; }
 
-    public void setMonitorCon(ClientAux monitorCon) { this.monitorCon = monitorCon; };
+    public void setMonitorCon(ClientAux monitorCon) { this.monitorCon = monitorCon; }
 
     public ServerGUI getGui() {
         return this.gui;
@@ -46,26 +46,20 @@ public class Server {
     }
 
     public void processRequest(Message msg) {
-        //TODO: Check Number of iterations that the server may process
-        if(this.mFifo.isFull()){
+        if(this.mFifo.isFull() || !this.mFifo.increaseNICounter(msg.getNI())){
             msg.setTopic(MessageTopic.REJECTION);
-            try {
+            try{
+                // Inform Monitor that the Request has been rejected
                 this.monitorCon.sendMsg(msg);
-            } catch (IOException e) {
+                // inform also the Client
+                this.sendToClient(msg,msg.getServerPort());
+            }
+            catch (IOException e){
                 e.printStackTrace();
             }
-            // reply with that the request cannot be processed at the momment
+
         }
         this.mFifo.put(msg);
-        // process com time to sleeps ig
-
-        // send to client processed result
-        // sendToClient(null, 0);
-
-        // send to monitor request finished processing
-        // this.monitorCon.sendMsg(null);
-
-        // this.mFifo.get();
     }
 
     public  void sendtoMonitor(Message msg){

@@ -14,4 +14,6 @@ public class MessageTopic {
     public static final int CLIENT_REGISTER_ACCEPTED = 9;
     public static final int REQUEST_PROCESSED = 10;
     public static final int SERVER_REGISTER = 11;
+    public static  final int FORWARD_PENDING = 13;
+
 }

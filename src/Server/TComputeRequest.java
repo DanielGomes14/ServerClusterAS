@@ -27,6 +27,7 @@ class TComputeRequest extends Thread{
                 if(msg != null){
                     try {
                         Message reply = calculatePI(msg);
+                        mfifo.decreaseNICounter(msg.getNI());
                         server.sendToClient(reply,reply.getServerPort());
                         reply.setTopic(REQUEST_PROCESSED);
                         server.sendtoMonitor(msg);

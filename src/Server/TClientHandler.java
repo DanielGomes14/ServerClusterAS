@@ -36,6 +36,8 @@ public class TClientHandler extends Thread {
                     if (msg.getTopic() != 4)
                         System.out.println(msg.getTopic());
                     switch ((msg.getTopic())) {
+                        case MessageTopic.REQUEST:
+                            this.server.processRequest(msg);
                         case MessageTopic.SERVER_REGISTER:
                             this.server.setServerId(msg.getServerId());
                             break;
