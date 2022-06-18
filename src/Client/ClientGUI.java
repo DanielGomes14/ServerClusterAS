@@ -52,11 +52,16 @@ public class ClientGUI {
         tableModel0 = new DefaultTableModel();
         tableModel1 = new DefaultTableModel();
         tableModel0.addColumn("Id");
-        tableModel0.addColumn("Number of Iterations");
+        tableModel0.addColumn("NI");
         tableModel0.addColumn("Deadline");
-        tableModel1.addColumn("Request Id");
-        tableModel1.addColumn("Number of Iterations");
+
+        tableModel1.addColumn("Id");
+        tableModel1.addColumn("Server Id");
+        tableModel1.addColumn("NI");
         tableModel1.addColumn("Deadline");
+        tableModel1.addColumn("PI");
+        tableModel1.addColumn("Status");
+
         pendingRequestsTable.setModel(tableModel0);
         processedRequestsTable.setModel(tableModel1);
 
@@ -91,6 +96,26 @@ public class ClientGUI {
                 }
             }
         });
+    }
+
+    public void addReply(Message msg) {
+        try {
+            queue.invokeAndWait(() -> {
+                tableModel1.addRow(new Object[]{msg.getRequestId(), msg.getServerId(), msg.getNI(), msg.getDeadline(), msg.getPi(), "PROCESSED"});
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void requestRejected(Message msg) {
+        try {
+            queue.invokeAndWait(() -> {
+                tableModel1.addRow(new Object[]{msg.getRequestId(), null, msg.getNI(), msg.getDeadline(), null, "REJECTED"});
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public void addPendingRequest(Message msg) {
@@ -193,7 +218,7 @@ public class ClientGUI {
         final com.intellij.uiDesigner.core.Spacer spacer7 = new com.intellij.uiDesigner.core.Spacer();
         panel2.add(spacer7, new com.intellij.uiDesigner.core.GridConstraints(4, 2, 3, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_HORIZONTAL, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, new Dimension(10, -1), null, 0, false));
         final JLabel label4 = new JLabel();
-        label4.setText("Pending Requests");
+        label4.setText("Requests");
         panel2.add(label4, new com.intellij.uiDesigner.core.GridConstraints(4, 0, 1, 2, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_WEST, com.intellij.uiDesigner.core.GridConstraints.FILL_NONE, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         final JLabel label5 = new JLabel();
         label5.setText("Replies");

@@ -43,6 +43,7 @@ public class ClientAux extends Thread {
 
             if (firstMessage != null)
                 sendMsg(firstMessage);
+
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -56,10 +56,7 @@ public class TClientHandler extends Thread {
                             new ClientAux(
                                     hostname,
                                     msg.getServerPort(),
-                                    this.monitor.registerNewServer(
-                                            new ServerInfo(msg.getServerId(), msg.getServerPort(), 0)
-                                    )
-                            ).start();
+                                    this.monitor.registerNewServer(msg.getServerPort())).start();
                         case MessageTopic.REQUEST_PROCESSED:
                             this.monitor.requestProcessed(msg);
                             break;
@@ -74,7 +71,6 @@ public class TClientHandler extends Thread {
                             break;
                         case MessageTopic.REJECTION:
                             this.monitor.requestRejected(msg);
-                            //TODO: update interface
                             break;
                     }
                     // client requests

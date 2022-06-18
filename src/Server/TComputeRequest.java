@@ -1,6 +1,7 @@
 package Server;
 
 import Communication.Message;
+import Communication.MessageTopic;
 import FIFO.IFIFO_Server;
 
 import static Communication.MessageTopic.REPLY;
@@ -26,11 +27,15 @@ class TComputeRequest extends Thread{
                 msg = mfifo.get();
                 if(msg != null){
                     try {
-                        msg.setTopic(REQUEST_IN_PROCESS);
+                        msg.setServerId(server.getServerId());
+                        msg.setTopic(MessageTopic.REQUEST_IN_PROCESS);
                         server.sendtoMonitor(msg);
+                        server.getGui().inProcessingRequest(msg);
+
                         Message reply = calculatePI(msg);
                         server.sendToClient(reply, reply.getServerPort());
                         reply.setTopic(REQUEST_PROCESSED);
+                        server.getGui().addReply(reply);
                         server.sendtoMonitor(msg);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
@@ -44,7 +49,7 @@ class TComputeRequest extends Thread{
                 for(int i = 1; i<=msg.getNI(); i++){
                     base = addDecimalPlace(base,i+1);
                 }
-                Thread.sleep(msg.getNI());
+                Thread.sleep(msg.getNI() * 1000);
                 msg.setTopic(REPLY);
                 msg.setPi(Double.parseDouble(base));
                 return msg;

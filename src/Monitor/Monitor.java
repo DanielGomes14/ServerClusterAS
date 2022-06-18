@@ -104,12 +104,12 @@ public class Monitor implements IMonitor, IMonitor_Heartbeat{
         return msg;
     }
 
-    public Message registerNewServer(ServerInfo serverInfo) {
+    public Message registerNewServer(int serverPort) {
         this.rl.lock();
 
         int id = this.serverCount++;
 
-        serverInfo.setServerId(id);
+        ServerInfo serverInfo = new ServerInfo(id, serverPort, 0);
 
         this.servers.put(id, serverInfo);
 
@@ -117,11 +117,11 @@ public class Monitor implements IMonitor, IMonitor_Heartbeat{
                 this.hostname, serverInfo.getServerPort(), id, true, this));
         this.serverHeartbeatThreads.get(id).start();
 
-        this.rl.unlock();
-
         Message msg = new Message(MessageTopic.SERVER_REGISTER, id, serverInfo.getServerPort());
 
         this.gui.registerServer(msg);
+
+        this.rl.unlock();
 
         return msg;
     }
@@ -229,12 +229,11 @@ public class Monitor implements IMonitor, IMonitor_Heartbeat{
     public void requestProcessed(Message msg){
         this.rl.lock();
 
-        pendingRequests.remove(msg.getRequestId());
-        
         ServerInfo server = servers.get(msg.getServerId());
         server.setNI(server.getNI() - msg.getNI());
         server.setActiveReq(server.getActiveReq() - 1);
-        // TODO: update interface request status processing and servers info
+
+        this.gui.requestProcessed(msg.getRequestId(), server);
 
         this.rl.unlock();
     }
@@ -245,7 +244,8 @@ public class Monitor implements IMonitor, IMonitor_Heartbeat{
         ServerInfo server = servers.get(msg.getServerId());
         server.setPendingReq(server.getPendingReq() - 1);
         server.setActiveReq(server.getActiveReq() + 1);
-        // TODO: update interface request status processing and servers info
+
+        this.gui.requestInProcess(msg.getRequestId(), server);
 
         this.rl.unlock();
     }
@@ -257,7 +257,8 @@ public class Monitor implements IMonitor, IMonitor_Heartbeat{
         ServerInfo server = servers.get(msg.getServerId());
         server.setNI(server.getNI() + msg.getNI());
         server.setPendingReq(server.getPendingReq() + 1);
-        // TODO: update interface request status processing and servers info
+
+        this.gui.updateServerInfo(server, msg.getRequestId());
 
         rl.unlock();
     }
@@ -266,8 +267,9 @@ public class Monitor implements IMonitor, IMonitor_Heartbeat{
         this.rl.lock();
 
         pendingRequests.remove(msg.getRequestId());
-        // TODO: interface
-        
+
+        this.gui.requestRejected(msg);
+
         this.rl.unlock();
     }
 

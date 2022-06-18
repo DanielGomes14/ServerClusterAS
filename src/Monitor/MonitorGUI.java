@@ -2,6 +2,7 @@ package Monitor;
 
 
 import Communication.Message;
+import Server.ServerInfo;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
@@ -33,6 +34,7 @@ public class MonitorGUI {
 
         this.tableRows1 = new HashMap<>();
         this.tableRows2 = new HashMap<>();
+        this.tableRows3 = new HashMap<>();
 
         JFrame jf = new JFrame();
         jf.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -88,7 +90,10 @@ public class MonitorGUI {
     public void addPendingRequest(Message msg) {
         try {
             queue.invokeAndWait(() -> {
-                tableModel3.addRow(new Object[]{msg.getRequestId(), msg.getServerId(), msg.getNI(), msg.getDeadline(), "NONE", "PENDING"});
+                Object[] obj = new Object[]{msg.getRequestId(), msg.getServerId(), msg.getNI(), msg.getDeadline(), "NONE", "PENDING"};
+                this.tableRows3.put(msg.getRequestId(), tableModel3.getRowCount());
+
+                tableModel3.addRow(obj);
             });
         } catch (Exception e) {
             e.printStackTrace();
@@ -132,15 +137,75 @@ public class MonitorGUI {
                 Object[] obj = new Object[]{
                         msg.getServerId(), msg.getServerPort(), str, "UP"
                 };
-
                 this.tableRows2.put(msg.getServerId(), tableModel2.getRowCount());
                 tableModel2.addRow(obj);
             });
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
 
+    public void requestProcessed(int requestId, ServerInfo server) {
+        try {
+            queue.invokeAndWait(() -> {
+                if (tableRows3.containsKey(requestId)) {
+                    tableModel3.setValueAt("PROCESSED", tableRows3.get(requestId), 5);
+                }
+                if (tableRows1.containsKey(server.getServerId())) {
+                    tableModel1.setValueAt(server.getNI(), tableRows1.get(server.getServerId()), 2);
+                    tableModel1.setValueAt(server.getPendingReq(), tableRows1.get(server.getServerId()), 3);
+                    tableModel1.setValueAt(server.getActiveReq(), tableRows1.get(server.getServerId()), 4);
+                }
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
+    public void requestInProcess(int requestId, ServerInfo server) {
+        try {
+            queue.invokeAndWait(() -> {
+                if (tableRows3.containsKey(requestId)) {
+                    tableModel3.setValueAt("IN_PROCESSING", tableRows3.get(requestId), 5);
+                }
+                if (tableRows1.containsKey(server.getServerId())) {
+                    tableModel1.setValueAt(server.getNI(), tableRows1.get(server.getServerId()), 2);
+                    tableModel1.setValueAt(server.getPendingReq(), tableRows1.get(server.getServerId()), 3);
+                    tableModel1.setValueAt(server.getActiveReq(), tableRows1.get(server.getServerId()), 4);
+                }
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void updateServerInfo(ServerInfo server, int requestId) {
+        try {
+            queue.invokeAndWait(() -> {
+                if (tableRows3.containsKey(requestId)) {
+                    tableModel3.setValueAt(server.getServerId(), tableRows3.get(requestId), 4);
+                }
+                if (tableRows1.containsKey(server.getServerId())) {
+                    tableModel1.setValueAt(server.getNI(), tableRows1.get(server.getServerId()), 2);
+                    tableModel1.setValueAt(server.getPendingReq(), tableRows1.get(server.getServerId()), 3);
+                    tableModel1.setValueAt(server.getActiveReq(), tableRows1.get(server.getServerId()), 4);
+                }
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void requestRejected(Message msg) {
+        try {
+            queue.invokeAndWait(() -> {
+                if (tableRows3.containsKey(msg.getRequestId())) {
+                    tableModel3.setValueAt("REJECTED", tableRows3.get(msg.getRequestId()), 5);
+                }
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public void removeLB(int searchedId) {
@@ -245,5 +310,4 @@ public class MonitorGUI {
     public JComponent $$$getRootComponent$$$() {
         return panel1;
     }
-
 }

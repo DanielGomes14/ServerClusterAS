@@ -35,7 +35,7 @@ public class MFIFO implements  IFIFO_Server{
 
             for (int i=0; i<size; i++) {
                 if (fifo[i] == null) {
-                    fifo[i] = req;
+                    fifo[i] = request;
                     break;
                 }
             }

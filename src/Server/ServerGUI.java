@@ -1,10 +1,14 @@
 package Server;
 
+import Communication.Message;
+
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.HashMap;
 
 public class ServerGUI {
     private final EventQueue queue;
@@ -13,14 +17,17 @@ public class ServerGUI {
     private JPanel LBConnectPanel;
     private JButton connectButton;
     private JPanel RequestPanel;
-    private JTable pendingRequestsTable;
-    private JTable acceptedRequestsTable;
+    private JTable requestsTable;
+    private JTable repliesTable;
     private JButton endConnection;
     private JLabel serverId;
     private JComboBox comboBox1;
     private JPanel panel1;
     private JLabel lbPort;
     private JLabel clientPort;
+    private DefaultTableModel tableModel0;
+    private DefaultTableModel tableModel1;
+    private HashMap<Integer, Integer> tableRows0;
 
     public ServerGUI(Server server) {
         this.server = server;
@@ -33,6 +40,27 @@ public class ServerGUI {
         jf.setVisible(true);
 
         RequestPanel.setVisible(false);
+
+        tableRows0 = new HashMap<>();
+
+        tableModel0 = new DefaultTableModel();
+        tableModel1 = new DefaultTableModel();
+
+        tableModel0.addColumn("Id");
+        tableModel0.addColumn("Client Id");
+        tableModel0.addColumn("NI");
+        tableModel0.addColumn("Deadline");
+        tableModel0.addColumn("Status");
+
+        tableModel1.addColumn("Id");
+        tableModel1.addColumn("Client Id");
+        tableModel1.addColumn("NI");
+        tableModel1.addColumn("Deadline");
+        tableModel1.addColumn("PI");
+        tableModel1.addColumn("Status");
+
+        requestsTable.setModel(tableModel0);
+        repliesTable.setModel(tableModel1);
 
         connectButton.addActionListener(new ActionListener() {
             @Override
@@ -66,6 +94,55 @@ public class ServerGUI {
         try {
             queue.invokeAndWait(() -> {
                 serverId.setText(String.format("Server Id: %d", id));
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void addPendingRequest(Message msg) {
+        try {
+            queue.invokeAndWait(() -> {
+                this.tableRows0.put(msg.getRequestId(), tableModel0.getRowCount());
+                tableModel0.addRow(new Object[]{msg.getRequestId(), msg.getServerId(), msg.getNI(), msg.getDeadline(), "PENDING"});
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void inProcessingRequest(Message msg) {
+        try {
+            queue.invokeAndWait(() -> {
+                if (tableRows0.containsKey(msg.getRequestId()))
+                    this.tableModel0.setValueAt("IN_PROCESSING", tableRows0.get(msg.getRequestId()), 4);
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    public void addReply(Message msg) {
+        try {
+            queue.invokeAndWait(() -> {
+                if (tableRows0.containsKey(msg.getRequestId()))
+                    this.tableModel0.setValueAt("PROCESSED", tableRows0.get(msg.getRequestId()), 4);
+
+                tableModel1.addRow(new Object[]{msg.getRequestId(), msg.getServerId(), msg.getNI(), msg.getDeadline(), msg.getPi(), "PROCESSED"});
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void requestRejected(Message msg) {
+        try {
+            queue.invokeAndWait(() -> {
+                if (tableRows0.containsKey(msg.getRequestId()))
+                    this.tableModel0.setValueAt("REJECTED", tableRows0.get(msg.getRequestId()), 4);
+
+                tableModel1.addRow(new Object[]{msg.getRequestId(), null, msg.getNI(), msg.getDeadline(), null, "REJECTED"});
             });
         } catch (Exception e) {
             e.printStackTrace();
@@ -124,10 +201,10 @@ public class ServerGUI {
         final com.intellij.uiDesigner.core.Spacer spacer2 = new com.intellij.uiDesigner.core.Spacer();
         panel3.add(spacer2, new com.intellij.uiDesigner.core.GridConstraints(0, 1, 3, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_HORIZONTAL, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, new Dimension(10, -1), null, 0, false));
         final JLabel label2 = new JLabel();
-        label2.setText("Pending Requests");
+        label2.setText("Requests");
         panel3.add(label2, new com.intellij.uiDesigner.core.GridConstraints(0, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_WEST, com.intellij.uiDesigner.core.GridConstraints.FILL_NONE, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         final JLabel label3 = new JLabel();
-        label3.setText("Accepted Requests");
+        label3.setText("Replies");
         panel3.add(label3, new com.intellij.uiDesigner.core.GridConstraints(0, 2, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_WEST, com.intellij.uiDesigner.core.GridConstraints.FILL_NONE, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         endConnection = new JButton();
         endConnection.setText("End Connection");
@@ -136,12 +213,12 @@ public class ServerGUI {
         panel3.add(spacer3, new com.intellij.uiDesigner.core.GridConstraints(3, 0, 1, 3, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_VERTICAL, 1, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_WANT_GROW, null, new Dimension(10, 20), null, 0, false));
         final JScrollPane scrollPane1 = new JScrollPane();
         panel3.add(scrollPane1, new com.intellij.uiDesigner.core.GridConstraints(1, 2, 2, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_BOTH, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_WANT_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
-        acceptedRequestsTable = new JTable();
-        scrollPane1.setViewportView(acceptedRequestsTable);
+        repliesTable = new JTable();
+        scrollPane1.setViewportView(repliesTable);
         final JScrollPane scrollPane2 = new JScrollPane();
         panel3.add(scrollPane2, new com.intellij.uiDesigner.core.GridConstraints(1, 0, 2, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_BOTH, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_WANT_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
-        pendingRequestsTable = new JTable();
-        scrollPane2.setViewportView(pendingRequestsTable);
+        requestsTable = new JTable();
+        scrollPane2.setViewportView(requestsTable);
         serverId = new JLabel();
         serverId.setText("Server Id: unknown");
         RequestPanel.add(serverId, new com.intellij.uiDesigner.core.GridConstraints(1, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_NONE, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));

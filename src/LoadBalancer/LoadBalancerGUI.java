@@ -91,13 +91,13 @@ public class LoadBalancerGUI {
         }
     }
 
-    public void setServerIdRequest(Message request) {
+    public void setServerIdRequest(int requestId, int serverId) {
         try {
             queue.invokeAndWait(() -> {
-                if (request.getServerId() != -1) {
-                    tableModel0.setValueAt(request.getServerId(), tableRows0.get(request.getRequestId()), 4);
+                if (serverId != -1) {
+                    tableModel0.setValueAt(serverId, tableRows0.get(requestId), 4);
                 } else {
-                    tableModel0.setValueAt("NONE", tableRows0.get(request.getRequestId()), 4);
+                    tableModel0.setValueAt("NONE", tableRows0.get(requestId), 4);
                 }
             });
         } catch (Exception e) {

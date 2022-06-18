@@ -14,6 +14,8 @@ public class LoadBalancer {
     
     private ClientAux monitorCon;
     private ServerAux serverAux;
+    private final int MAX_SERVER_REQUESTS= 5;
+    private final int MAX_SERVER_NI= 20;
     private final String hostname = "localhost";
     private int port;
     private final int monitorPort = 5000;
@@ -66,7 +68,11 @@ public class LoadBalancer {
 
         // get the server with the lowest NI and
         for (ServerInfo server : msg.getServersInfo().values()) {
-            if (minNI > server.getNI() && server.getActiveReq() + server.getPendingReq() < 5 && server.getNI() + msg.getNI() > 20) {
+            if (
+                    minNI > server.getNI() &&
+                    ( server.getActiveReq() + server.getPendingReq() ) <= MAX_SERVER_REQUESTS
+                    && server.getNI() + msg.getNI() < MAX_SERVER_NI
+            ) {
                 bestServer = server;
             }
         }
@@ -74,41 +80,46 @@ public class LoadBalancer {
 		return bestServer;
 	}
 
+
     public void sendServerRequest(Message msg, int port) {
         ClientAux socket = new ClientAux(hostname, port, msg);
         socket.start();
-        //TODO: Close Connection
     }
 
-    public void forwardPendingRequests(Message msg) {
-        // for (Message msg: msg.getPendingRequests())
-        //     forwardMessageToServer(msg);
-    }
 
     public void forwardMessageToServer(Message msg) {
         // choose best server
         ServerInfo bestServer = chooseBestServer(msg);
+
         if (bestServer == null) {
             // send to monitor rejected status
             msg.setTopic(MessageTopic.REJECTION);
+            try {
+                this.monitorCon.sendMsg(msg);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             msg.setServerId(-1);
-            this.gui.setServerIdRequest(msg);
+            this.gui.setServerIdRequest(msg.getRequestId(), bestServer.getServerId());
             // send to client rejected status
             sendServerRequest(msg, msg.getServerPort());
             return;
         }
 
-        msg.setServerId(bestServer.getServerId());
+        System.out.println(bestServer.getServerPort());
+
+        msg.setTopic(MessageTopic.REQUEST);
         sendServerRequest(msg, bestServer.getServerPort());
-        this.gui.setServerIdRequest(msg);
-    
-        msg.setTopic(MessageTopic.REQUEST_ACK);
+
+        this.gui.setServerIdRequest(msg.getRequestId(), bestServer.getServerId());
+
+        Message msgToMonitor = new Message(MessageTopic.REQUEST_ACK, bestServer.getServerId(), bestServer.getServerPort());
+        msgToMonitor.setRequestId(msg.getRequestId());
 
         try {
-            this.monitorCon.sendMsg(msg);
-        }        
-        catch(IOException e){
-            //
+            this.monitorCon.sendMsg(msgToMonitor);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 

@@ -50,6 +50,7 @@ public class Server {
             msg.setTopic(MessageTopic.REJECTION);
 
             try{
+                this.gui.requestRejected(msg);
                 // Inform Monitor that the Request has been rejected
                 this.monitorCon.sendMsg(msg);
                 // inform also the Client
@@ -61,6 +62,7 @@ public class Server {
 
         }
         this.mFifo.put(msg);
+        this.gui.addPendingRequest(msg);
     }
 
     public  void sendtoMonitor(Message msg){
@@ -72,20 +74,18 @@ public class Server {
     }
 
     public void sendToClient(Message result, int port) {
-        ClientAux socket = new ClientAux(this.hostname, port);
-        try {
-            socket.sendMsg(result);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        new ClientAux(this.hostname, port, result).start();
     }
 
     public void end() {
         this.serverAux.close();
     }
 
+    public int getServerId() {
+        return serverId;
+    }
 
     public static void main(String[] args) {
-        new Server();        
+        new Server();
     }
 }
