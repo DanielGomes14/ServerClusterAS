@@ -1,6 +1,7 @@
 package LoadBalancer;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -12,19 +13,15 @@ import Server.ServerInfo;
 public class LoadBalancer {
     
     private ClientAux monitorCon;
-    private Map<Integer, ServerInfo> servers;
     private ServerAux serverAux;
     private final String hostname = "localhost";
     private int port;
     private final int monitorPort = 5000;
     private final LoadBalancerGUI gui;
-    private Map<Integer, Message> pendingRequests;
     private int LBId;
 
     public LoadBalancer() {
         this.gui = new LoadBalancerGUI(this);
-        this.servers = new HashMap<>();
-        this.pendingRequests = new HashMap<>();
     }
 
     public void start(int port) {
@@ -43,8 +40,6 @@ public class LoadBalancer {
         this.serverAux.close();
         this.serverAux = null;
         this.monitorCon = null;
-        this.servers = new HashMap<>();
-        this.pendingRequests = new HashMap<>();
     }
    
 
@@ -57,33 +52,21 @@ public class LoadBalancer {
     }
 
     public void clientRequest(Message msg) {
+        this.gui.addPendingRequest(msg);
         try {
             this.monitorCon.sendMsg(msg);
         } catch (IOException e) {
             e.printStackTrace();
         }
-        pendingRequests.put(msg.getRequestId(), msg);
-    }
-
-    public Message getHighestPriorityRequest() {
-        int earliestDeadline = Integer.MAX_VALUE;
-        Message highestPriorityRequest = null;
-
-        for (Message request : pendingRequests.values()) {
-            if (earliestDeadline > request.getDeadline()) {
-                highestPriorityRequest = request;
-            }
-        }
-
-        return highestPriorityRequest;
     }
 
     public ServerInfo chooseBestServer(Message msg) {
         int minNI = Integer.MAX_VALUE;
         ServerInfo bestServer = null;
-        
+
+        // get the server with the lowest NI and
         for (ServerInfo server : msg.getServersInfo().values()) {
-            if (minNI > server.getNI()) {
+            if (minNI > server.getNI() && server.getActiveReq() + server.getPendingReq() < 5 && server.getNI() + msg.getNI() > 20) {
                 bestServer = server;
             }
         }
@@ -91,8 +74,8 @@ public class LoadBalancer {
 		return bestServer;
 	}
 
-    public void sendServerRequest(Message msg) {
-        ClientAux socket = new ClientAux(hostname, msg.getServerPort(), msg);
+    public void sendServerRequest(Message msg, int port) {
+        ClientAux socket = new ClientAux(hostname, port, msg);
         socket.start();
         //TODO: Close Connection
     }
@@ -106,19 +89,27 @@ public class LoadBalancer {
         // choose best server
         ServerInfo bestServer = chooseBestServer(msg);
         if (bestServer == null) {
-            // send to client rejected status
             // send to monitor rejected status
+            msg.setTopic(MessageTopic.REJECTION);
+            msg.setServerId(-1);
+            this.gui.setServerIdRequest(msg);
+            // send to client rejected status
+            sendServerRequest(msg, msg.getServerPort());
             return;
         }
-        Message request = getHighestPriorityRequest();
-        if (request == null) {
-            // shouldnt happen but ok
-            return;
+
+        msg.setServerId(bestServer.getServerId());
+        sendServerRequest(msg, bestServer.getServerPort());
+        this.gui.setServerIdRequest(msg);
+    
+        msg.setTopic(MessageTopic.REQUEST_ACK);
+
+        try {
+            this.monitorCon.sendMsg(msg);
+        }        
+        catch(IOException e){
+            //
         }
-        // send msg with correct information
-        request.setServerId(bestServer.getServerId());
-        request.setServerPort(bestServer.getServerPort());
-        sendServerRequest(request);
     }
 
     public void setLBId(int LBId) {

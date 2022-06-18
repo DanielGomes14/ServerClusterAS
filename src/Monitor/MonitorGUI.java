@@ -21,8 +21,10 @@ public class MonitorGUI {
     private DefaultTableModel tableModel0;
     private DefaultTableModel tableModel1;
     private DefaultTableModel tableModel2;
+    private DefaultTableModel tableModel3;
     private HashMap<Integer, Integer> tableRows1;
     private HashMap<Integer, Integer> tableRows2;
+    private HashMap<Integer, Integer> tableRows3;
 
 
     public MonitorGUI(Monitor monitor) {
@@ -41,67 +43,128 @@ public class MonitorGUI {
         tableModel0 = new DefaultTableModel();
         tableModel1 = new DefaultTableModel();
         tableModel2 = new DefaultTableModel();
+        tableModel3 = new DefaultTableModel();
+
         tableModel0.addColumn("Id");
         tableModel0.addColumn("Port");
         tableModel1.addColumn("Id");
         tableModel1.addColumn("Port");
         tableModel1.addColumn("NI");
+        tableModel1.addColumn("Pending Requests");
+        tableModel1.addColumn("Active Requests");
         tableModel1.addColumn("Status");
         tableModel2.addColumn("Id");
         tableModel2.addColumn("Port");
         tableModel2.addColumn("LB");
         tableModel2.addColumn("Status");
+        tableModel3.addColumn("Id");
+        tableModel3.addColumn("Client Id");
+        tableModel3.addColumn("NI");
+        tableModel3.addColumn("Deadline");
+        tableModel3.addColumn("Server Id");
+        tableModel3.addColumn("Status");
+
         clientsTable.setModel(tableModel0);
         serversTable.setModel(tableModel1);
         LBTable.setModel(tableModel2);
+        requestsTable.setModel(tableModel3);
     }
 
     public void registerClient(Message msg) {
-        Object[] obj = new Object[]{
-                msg.getServerId(), msg.getServerPort()
-        };
+        try {
+            queue.invokeAndWait(() -> {
 
-        tableModel0.addRow(obj);
+                Object[] obj = new Object[]{
+                        msg.getServerId(), msg.getServerPort()
+                };
+
+                tableModel0.addRow(obj);
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
-    public void registerServer(Message msg) {
-        Object[] obj = new Object[]{
-                msg.getServerId(), msg.getServerPort(), msg.getNI(), "UP"
-        };
-        this.tableRows1.put(msg.getServerId(), tableModel1.getRowCount());
+    public void addPendingRequest(Message msg) {
+        try {
+            queue.invokeAndWait(() -> {
+                tableModel3.addRow(new Object[]{msg.getRequestId(), msg.getServerId(), msg.getNI(), msg.getDeadline(), "NONE", "PENDING"});
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
-        tableModel1.addRow(obj);
+
+    public void registerServer(Message msg) {
+        try {
+            queue.invokeAndWait(() -> {
+                Object[] obj = new Object[]{
+                        msg.getServerId(), msg.getServerPort(), 0, 0, 0, "UP"
+                };
+                this.tableRows1.put(msg.getServerId(), tableModel1.getRowCount());
+
+                tableModel1.addRow(obj);
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public void removeServer(int searchedId) {
-        if (tableRows1.containsKey(searchedId))
-            tableModel1.setValueAt("DOWN", tableRows1.get(searchedId), 3);
+        try {
+            queue.invokeAndWait(() -> {
+                if (tableRows1.containsKey(searchedId))
+                    tableModel1.setValueAt("DOWN", tableRows1.get(searchedId), 3);
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public void registerLB(Message msg, int primary) {
-        String str = "FALSE";
-        if (msg.getServerId() == primary)
-            str = "TRUE";
+        try {
+            queue.invokeAndWait(() -> {
+                String str = "FALSE";
+                if (msg.getServerId() == primary)
+                    str = "TRUE";
 
-        Object[] obj = new Object[]{
-                msg.getServerId(), msg.getServerPort(), str, "UP"
-        };
+                Object[] obj = new Object[]{
+                        msg.getServerId(), msg.getServerPort(), str, "UP"
+                };
 
-        this.tableRows2.put(msg.getServerId(), tableModel2.getRowCount());
+                this.tableRows2.put(msg.getServerId(), tableModel2.getRowCount());
+                tableModel2.addRow(obj);
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
-        tableModel2.addRow(obj);
+
     }
 
     public void removeLB(int searchedId) {
-        if (tableRows2.containsKey(searchedId)) {
-            tableModel2.setValueAt("DOWN", tableRows2.get(searchedId), 3);
-            tableModel2.setValueAt("FALSE", tableRows2.get(searchedId), 2);
+        try {
+            queue.invokeAndWait(() -> {
+                if (tableRows2.containsKey(searchedId)) {
+                    tableModel2.setValueAt("DOWN", tableRows2.get(searchedId), 3);
+                    tableModel2.setValueAt("FALSE", tableRows2.get(searchedId), 2);
+                }
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
     public void turnPrimaryLB(int searchedId) {
-        if (tableRows2.containsKey(searchedId))
-            tableModel2.setValueAt("TRUE", tableRows2.get(searchedId), 2);
+        try {
+            queue.invokeAndWait(() -> {
+                if (tableRows2.containsKey(searchedId))
+                    tableModel2.setValueAt("TRUE", tableRows2.get(searchedId), 2);
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     {

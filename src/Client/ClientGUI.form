@@ -131,14 +131,14 @@
                 </constraints>
                 <properties/>
               </component>
-              <component id="48fc1" class="javax.swing.JButton" binding="requestButton" default-binding="true">
+              <component id="48fc1" class="javax.swing.JButton" binding="sendRequestSButton" default-binding="true">
                 <constraints>
-                  <grid row="0" column="3" row-span="3" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="2" use-parent-layout="false">
-                    <preferred-size width="100" height="60"/>
+                  <grid row="0" column="3" row-span="3" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="0" indent="2" use-parent-layout="false">
+                    <preferred-size width="150" height="60"/>
                   </grid>
                 </constraints>
                 <properties>
-                  <text value="Request"/>
+                  <text value="Send Request(s)"/>
                 </properties>
               </component>
               <component id="8f93d" class="javax.swing.JLabel">

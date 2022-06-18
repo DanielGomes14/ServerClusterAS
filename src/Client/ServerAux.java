@@ -25,6 +25,10 @@ public class ServerAux extends Thread {
         this.LBPort = LBPort;
     }
 
+    public int getPort() {
+        return port;
+    }
+
     public void run() {
         try {
             serverSocket = new ServerSocket(0);

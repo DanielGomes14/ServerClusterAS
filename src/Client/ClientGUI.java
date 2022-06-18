@@ -1,10 +1,15 @@
 package Client;
 
+import Communication.Message;
+
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.util.HashMap;
 
 public class ClientGUI {
     private final EventQueue queue;
@@ -16,7 +21,7 @@ public class ClientGUI {
     private JPanel LBConnectPanel;
     private JPanel RequestPanel;
     private JSpinner nRequests;
-    private JButton requestButton;
+    private JButton sendRequestSButton;
     private JTable pendingRequestsTable;
     private JSpinner NI;
     private JSpinner deadline;
@@ -25,7 +30,8 @@ public class ClientGUI {
     private JComboBox comboBox1;
     private JLabel lbPort;
     private JLabel clientPort;
-
+    private DefaultTableModel tableModel0;
+    private DefaultTableModel tableModel1;
 
     public ClientGUI(Client client) {
         this.client = client;
@@ -38,6 +44,21 @@ public class ClientGUI {
         jf.setVisible(true);
 
         RequestPanel.setVisible(false);
+
+        nRequests.setValue(1);
+        NI.setValue(1);
+        deadline.setValue(5);
+
+        tableModel0 = new DefaultTableModel();
+        tableModel1 = new DefaultTableModel();
+        tableModel0.addColumn("Id");
+        tableModel0.addColumn("Number of Iterations");
+        tableModel0.addColumn("Deadline");
+        tableModel1.addColumn("Request Id");
+        tableModel1.addColumn("Number of Iterations");
+        tableModel1.addColumn("Deadline");
+        pendingRequestsTable.setModel(tableModel0);
+        processedRequestsTable.setModel(tableModel1);
 
         connectButton.addActionListener(new ActionListener() {
             @Override
@@ -59,6 +80,21 @@ public class ClientGUI {
                 LBConnectPanel.setVisible(true);
             }
         });
+
+        sendRequestSButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    client.sendRequest((int) nRequests.getValue(), (int) NI.getValue(), (int) deadline.getValue());
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        });
+    }
+
+    public void addPendingRequest(Message msg) {
+        tableModel0.addRow(new Object[]{msg.getRequestId(), msg.getNI(), msg.getDeadline()});
     }
 
     public void setClientPort(int port) {
@@ -144,9 +180,9 @@ public class ClientGUI {
         panel2.add(label2, new com.intellij.uiDesigner.core.GridConstraints(0, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_WEST, com.intellij.uiDesigner.core.GridConstraints.FILL_NONE, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         nRequests = new JSpinner();
         panel2.add(nRequests, new com.intellij.uiDesigner.core.GridConstraints(0, 1, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_WEST, com.intellij.uiDesigner.core.GridConstraints.FILL_HORIZONTAL, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_WANT_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, new Dimension(60, -1), null, null, 0, false));
-        requestButton = new JButton();
-        requestButton.setText("Request");
-        panel2.add(requestButton, new com.intellij.uiDesigner.core.GridConstraints(0, 3, 3, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_HORIZONTAL, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(100, 60), null, 2, false));
+        sendRequestSButton = new JButton();
+        sendRequestSButton.setText("Send Request(s)");
+        panel2.add(sendRequestSButton, new com.intellij.uiDesigner.core.GridConstraints(0, 3, 3, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_NONE, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, 60), null, 2, false));
         final JLabel label3 = new JLabel();
         label3.setText("Nº of Iterations:");
         panel2.add(label3, new com.intellij.uiDesigner.core.GridConstraints(1, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_WEST, com.intellij.uiDesigner.core.GridConstraints.FILL_NONE, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));

@@ -34,7 +34,7 @@ public class TClientHandler extends Thread {
                 try {
                     msg = (Message) in.readObject();
                     System.out.println(msg.getTopic());
-                    switch ((msg.getTopic())){
+                    switch ((msg.getTopic())) {
                         case MessageTopic.REQUEST:
                             // receive request from a client
                             this.monitor.receiveNewRequest(msg);
@@ -43,7 +43,7 @@ public class TClientHandler extends Thread {
                             // to the primary lb
                             msg.setTopic(MessageTopic.SERVERS_INFO);
                             msg.setServersInfo(this.monitor.getServersInfo());
-                            sendMsg(msg);
+                            this.monitor.sendMsgToLB(msg);
                             break;
                         case MessageTopic.LB_REGISTER:
                             new ClientAux(
@@ -66,8 +66,15 @@ public class TClientHandler extends Thread {
                         case MessageTopic.CLIENT_REGISTER_PENDING:
                             this.monitor.sendMsgToLB(this.monitor.registerNewClient(msg));
                             break;
+                        case MessageTopic.REQUEST_ACK:
+                            this.monitor.updateServerInfo(msg);
+                            break;
+                        case MessageTopic.REQUEST_IN_PROCESS:
+                            this.monitor.requestInProcess(msg);
+                            break;
                         case MessageTopic.REJECTION:
                             this.monitor.requestRejected(msg);
+                            //TODO: update interface
                             break;
                     }
                     // client requests

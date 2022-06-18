@@ -31,7 +31,7 @@ public class Message implements Serializable {
         this.topic = topic;
     }
 
-    public Message(int topic, int requestId, int clientId, int serverId, int NI, int deadline) {
+    public Message(int topic, int requestId, int serverId, int NI, int deadline) {
         this.topic = topic;
         this.requestId = requestId;
         this.serverId = serverId;
@@ -53,6 +53,9 @@ public class Message implements Serializable {
         this.serverPort = port;
     }
 
+    public void setPendingRequests(List<Message> pendingRequests) {
+        this.pendingRequests = pendingRequests;
+    }
 
     public Map<Integer, ServerInfo> getServersInfo() {
         return serversInfo;

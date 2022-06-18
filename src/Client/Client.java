@@ -5,6 +5,7 @@ import Communication.Message;
 import Communication.MessageTopic;
 
 import java.awt.*;
+import java.io.IOException;
 
 public class Client {
     private final EventQueue queue;
@@ -13,6 +14,7 @@ public class Client {
     private ServerAux serverAux;
     private ClientAux clientAux;
     private int clientId;
+    private int nRequests = 0;
 
     public Client() {
         this.queue = new EventQueue();
@@ -37,6 +39,19 @@ public class Client {
     public ClientAux getClientAux() { return this.clientAux; };
 
     public void setClientAux(ClientAux clientAux) { this.clientAux = clientAux; };
+
+    public void sendRequest(int nRequests, int NI, int deadline) throws IOException {
+        for (int i=0; i<nRequests; i++) {
+            Message request = new Message(
+                    MessageTopic.REQUEST,
+                    1000*clientId+(this.nRequests++),
+                    this.clientId,
+                    NI,
+                    deadline);
+            this.clientAux.sendMsg(request);
+            this.gui.addPendingRequest(request);
+        }
+    }
 
     public void setClientId(int clientId) {
         this.clientId = clientId;

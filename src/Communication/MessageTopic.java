@@ -15,5 +15,8 @@ public class MessageTopic {
     public static final int REQUEST_PROCESSED = 10;
     public static final int SERVER_REGISTER = 11;
     public static  final int FORWARD_PENDING = 13;
+    public static  final int REQUEST_ACK = 14;
+    public static final int REQUEST_IN_PROCESS = 15;
+
 
 }

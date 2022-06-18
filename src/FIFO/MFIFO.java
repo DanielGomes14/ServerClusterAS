@@ -32,9 +32,18 @@ public class MFIFO implements  IFIFO_Server{
             rl.lock();
             while ( isFull() )
                 cNotFull.await();
-            fifo[ idxPut ] = request;
-            idxPut = (++idxPut) % size;
+
+            for (int i=0; i<size; i++) {
+                if (fifo[i] == null) {
+                    fifo[i] = req;
+                    break;
+                }
+            }
+
             count++;
+
+            this.niCounter += request.getNI();
+
             cNotEmpty.signal();
         } catch ( InterruptedException ignored) {}
         finally {
@@ -42,37 +51,52 @@ public class MFIFO implements  IFIFO_Server{
         }
     }
 
-    public boolean increaseNICounter(int ni){
+    public boolean checkNICounter(int ni){
         boolean success = true;
         rl.lock();
-        if(this.niCounter + ni > 20) {
+        if (this.niCounter + ni > 20) {
             success = false;
         }
-        else
-            this.niCounter+=ni;
         rl.unlock();
         return  success;
     }
-    public void decreaseNICounter(int ni){
-        rl.lock();
-        this.niCounter = ni;
-        rl.unlock();
-    }
+
+
     public Message get() {
+        Message req = null;
+
         try{
             rl.lock();
+
             while ( isEmpty() )
                 cNotEmpty.await();
-            idxGet = idxGet % size;
+            int minDeadline = Integer.MAX_VALUE;
+            int idxChoosen = -1;
+            for (int i=0; i<size; i++) {
+                if (fifo[i] != null && minDeadline >= fifo[i].getDeadline()) {
+                    minDeadline = fifo[i].getDeadline();
+                    req = fifo[i];
+                    idxChoosen = i;
+                }
+            }
+
+            if (req != null) {
+                fifo[idxChoosen] = null;
+            }
+
             count --;
+
+            this.niCounter -= req.getNI();
+
             cNotFull.signal();
-            return fifo[idxGet++];
+
         } catch (InterruptedException e) {
             e.printStackTrace();
         } finally {
             rl.unlock();
         }
-        return null;
+        
+        return req;
     }
 
     public boolean isFull() {
@@ -81,6 +105,7 @@ public class MFIFO implements  IFIFO_Server{
         this.rl.unlock();
         return res;
     }
+
     public boolean isEmpty() {
         this.rl.lock();
         boolean res = count == 0;

@@ -36,6 +36,12 @@ public class TClientHandler extends Thread {
                             System.out.println(msg.getServerId());
                             this.client.setClientId(msg.getServerId());
                             break;
+                        case MessageTopic.REPLY:
+                            // TODO: int
+                            break;
+                        case MessageTopic.REJECTION:
+                            //TODO: interface
+                            break;
                         default:
                             break;
                     }

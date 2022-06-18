@@ -46,13 +46,14 @@ public class Server {
     }
 
     public void processRequest(Message msg) {
-        if(this.mFifo.isFull() || !this.mFifo.increaseNICounter(msg.getNI())){
+        if (this.mFifo.isFull() || !this.mFifo.checkNICounter(msg.getNI())) {
             msg.setTopic(MessageTopic.REJECTION);
+
             try{
                 // Inform Monitor that the Request has been rejected
                 this.monitorCon.sendMsg(msg);
                 // inform also the Client
-                this.sendToClient(msg,msg.getServerPort());
+                this.sendToClient(msg, msg.getServerPort());
             }
             catch (IOException e){
                 e.printStackTrace();

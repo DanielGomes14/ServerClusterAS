@@ -9,6 +9,5 @@ public interface IFIFO_Server {
     boolean isFull();
     boolean isEmpty();
 
-    boolean increaseNICounter(int ni);
-    void decreaseNICounter(int ni);
+    boolean checkNICounter(int ni);
 }
