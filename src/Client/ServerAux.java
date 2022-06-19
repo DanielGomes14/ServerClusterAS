@@ -29,15 +29,15 @@ public class ServerAux extends Thread {
         return port;
     }
 
+    public int getLBPort() { return this.LBPort;}
+
     public void run() {
         try {
             serverSocket = new ServerSocket(0);
             this.port = serverSocket.getLocalPort();
             this.client.getGui().setClientPort(port);
 
-            this.client.setClientAux(new ClientAux(this.hostname, this.LBPort,
-                    new Message(MessageTopic.CLIENT_REGISTER_PENDING, this.port)));
-            this.client.getClientAux().start();
+            this.client.sendToLB(new Message(MessageTopic.CLIENT_REGISTER_PENDING, this.port));
 
             // running infinite loop for getting client requests
             while (true) {

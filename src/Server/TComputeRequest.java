@@ -59,7 +59,7 @@ class TComputeRequest extends Thread{
                 }
                 Message reply = new Message(REPLY, msg.getRequestId(), msg.getServerId(), msg.getNI(), msg.getDeadline());
                 reply.setClientId(msg.getClientId());
-                Thread.sleep(reply.getNI() * 2000);
+                Thread.sleep(reply.getNI() * 1000);
                 reply.setServerPort(msg.getServerPort());
                 reply.setPi(Double.parseDouble(base));
                 return reply;

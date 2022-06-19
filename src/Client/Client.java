@@ -12,7 +12,6 @@ public class Client {
     private final ClientGUI gui;
     private final String hostname = "localhost";
     private ServerAux serverAux;
-    private ClientAux clientAux;
     private int clientId;
     private int nRequests = 0;
 
@@ -37,14 +36,14 @@ public class Client {
         return this.gui;
     }
 
-    public ClientAux getClientAux() { return this.clientAux; };
-
-    public void setClientAux(ClientAux clientAux) { this.clientAux = clientAux; };
+    public  void sendToLB(Message msg){
+        new ClientAux(this.hostname, this.serverAux.getLBPort(), msg, true).start();
+    }
 
     public void sendRequest(int nRequests, int NI, int deadline) throws IOException {
         for (int i=0; i<nRequests; i++) {
             try {
-                Thread.sleep(200);
+                Thread.sleep(100);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -55,7 +54,7 @@ public class Client {
                     NI,
                     deadline);
             request.setClientId(this.clientId);
-            this.clientAux.sendMsg(request);
+            this.sendToLB(request);
             this.gui.addPendingRequest(request);
         }
     }

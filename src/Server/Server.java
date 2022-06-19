@@ -12,7 +12,6 @@ public class Server {
     private final ServerGUI gui;
     private ServerAux serverAux;
     private int serverId;
-    private  ClientAux monitorCon;
     private final int monitorPort = 5000;
     private IFIFO_Server mFifo;
     private final String hostname = "localhost";
@@ -31,18 +30,10 @@ public class Server {
             this.activeThreads[i] = new TComputeRequest(mFifo,this);
             this.activeThreads[i].start();
         }
-        try {
-            Thread.sleep(100);
-
-        }catch (InterruptedException ignored) {
-        }
         this.serverAux = new ServerAux(this, this.hostname, this.monitorPort);
         this.serverAux.start();
     }
 
-    public ClientAux getMonitorCon() { return this.monitorCon; }
-
-    public void setMonitorCon(ClientAux monitorCon) { this.monitorCon = monitorCon; }
 
     public ServerGUI getGui() {
         return this.gui;
@@ -56,17 +47,12 @@ public class Server {
     public void processRequest(Message msg) {
         if (this.mFifo.isFull() || !this.mFifo.checkNICounter(msg.getNI())) {
             msg.setTopic(MessageTopic.REJECTION);
-            try{
-                this.gui.requestRejected(msg);
-                // Inform Monitor that the Request has been rejected
-                this.monitorCon.sendMsg(msg);
+            this.gui.requestRejected(msg);
+            // Inform Monitor that the Request has been rejected
+            this.sendtoMonitor(msg);
 
-                // inform also the Client
-                this.sendToClient(msg, msg.getServerPort());
-            }
-            catch (IOException e){
-                e.printStackTrace();
-            }
+            // inform also the Client
+            this.sendToClient(msg, msg.getServerPort());
         } else {
             this.mFifo.put(msg);
             this.gui.addPendingRequest(msg);
@@ -74,12 +60,8 @@ public class Server {
     }
 
     public  void sendtoMonitor(Message msg){
-        try {
-            this.monitorCon.sendMsg(msg);
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        new ClientAux(
+                this.hostname, this.monitorPort, msg,true).start();
     }
 
     public void sendToClient(Message result, int port) {

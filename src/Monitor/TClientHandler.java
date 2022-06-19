@@ -36,12 +36,6 @@ public class TClientHandler extends Thread {
                         case MessageTopic.REQUEST:
                             // receive request from a client
                             this.monitor.receiveNewRequest(msg);
-                            // send information of current servers
-                            // plus the request itself
-                            // to the primary lb
-                            msg.setTopic(MessageTopic.SERVERS_INFO);
-                            msg.setServersInfo(this.monitor.getServersInfo());
-                            this.monitor.sendMsgToLB(msg);
                             break;
                         case MessageTopic.LB_REGISTER:
                             new ClientAux(

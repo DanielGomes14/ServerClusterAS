@@ -48,21 +48,19 @@ public class TClientHandler extends Thread {
                             new ClientAux(hostname, msg.getServerPort(), msg).start();
                             break;
                         case MessageTopic.REQUEST:
-                            // TODO: for msg get requests send
                             this.lb.clientRequest(msg);
                             break;
                         case MessageTopic.SERVERS_INFO:
                             this.lb.forwardMessageToServer(msg);
                             break;
-//                        case MessageTopic.FORWARD_PENDING:
-//                            System.out.println("aqui");
-//                            for(Message m: msg.getPendingRequests()){
-//                                System.out.println("aqui2");
-//                                System.out.println(msg.getServersInfo().size());
-//                                m.setServersInfo(msg.getServersInfo());
-//                                this.lb.forwardMessageToServer(m);
-//                            }
-//                            break;
+                        case MessageTopic.FORWARD_PENDING:
+                            System.out.println("aqui");
+                            for(Message m: msg.getPendingRequests()){
+                                System.out.println(msg.getServersInfo().size());
+                                m.setServersInfo(msg.getServersInfo());
+                                this.lb.forwardMessageToServer(m);
+                            }
+                            break;
                         default:
                             break;
                     }

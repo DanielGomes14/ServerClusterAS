@@ -50,9 +50,6 @@ public class Monitor implements IMonitor, IMonitor_Heartbeat{
         this.gui = new MonitorGUI(this);
     }
 
-    public MonitorGUI getGui() {
-        return this.gui;
-    }
 
     public  void receiveNewRequest(Message msg){
         this.rl.lock();
@@ -62,6 +59,13 @@ public class Monitor implements IMonitor, IMonitor_Heartbeat{
         if (clients.containsKey(msg.getClientId())) {
             msg.setServerPort(clients.get(msg.getClientId()));
         }
+        // send information of current servers
+        // plus the request itself
+        // to the primary lb
+        msg.setTopic(MessageTopic.SERVERS_INFO);
+        msg.setServersInfo(this.servers);
+        this.sendMsgToLB(msg);
+
         this.rl.unlock();
     }
 
@@ -88,15 +92,15 @@ public class Monitor implements IMonitor, IMonitor_Heartbeat{
                 this.hostname, msg.getServerPort(), id, false, this));
             this.LBHeartbeatThreads.get(id).start();
         }
-
-        this.rl.unlock();
-
         if (id == -1)
             return null;
 
         msg.setServerId(id);
 
         this.gui.registerLB(msg, primaryLB);
+
+        this.rl.unlock();
+
 
         return msg;
     }
@@ -131,12 +135,12 @@ public class Monitor implements IMonitor, IMonitor_Heartbeat{
         // store client info such as ports and put in the GUI
         this.clients.put(id, msg.getServerPort());
 
-        this.rl.unlock();
-
         msg.setClientId(id);
         msg.setTopic(MessageTopic.CLIENT_REGISTER_ACCEPTED);
 
         this.gui.registerClient(msg);
+
+        this.rl.unlock();
 
         return msg;
     }
@@ -149,40 +153,28 @@ public class Monitor implements IMonitor, IMonitor_Heartbeat{
         ArrayList<Message> pendingRequeststoRemove = new ArrayList<>();
 
         for (Message removemsg: this.pendingRequests.values()){
-            if (removemsg.getServerId() == serverId)
-                pendingRequeststoRemove.add(removemsg);
+            if (removemsg.getServerId() == serverId) {
+                Message reply = new Message(MessageTopic.SERVERS_INFO, removemsg.getRequestId(), removemsg.getServerId(), removemsg.getNI(), removemsg.getDeadline());
+                reply.setServerPort(clients.get(removemsg.getClientId()));
+                reply.setClientId(removemsg.getClientId());
+
+                pendingRequeststoRemove.add(reply);
+            }
         }
 
         serverHeartbeatThreads.remove(serverId);
 
         this.gui.removeServer(serverId);
 
+        // add pending requests to message
+        // send message to loadbalancer
+        Message reply = new Message(MessageTopic.FORWARD_PENDING);
+        reply.setPendingRequests(pendingRequeststoRemove);
+        reply.setServersInfo(servers);
+
+        sendMsgToLB(reply);
+
         this.rl.unlock();
-
-        // maybe check if the only server dies during processing, inform client of rejection because
-        // at the moment it wont receive any reply
-
-        for(Message msg: pendingRequeststoRemove) {
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            this.rl.lock();
-
-            // add pending requests to message
-            // send message to loadbalancer
-            System.out.println(String.format("Deadline %d %d",msg.getDeadline(), msg.getNI(),msg.getServerPort()));
-            Message reply = new Message(MessageTopic.SERVERS_INFO, msg.getRequestId(), msg.getServerId(), msg.getNI(), msg.getDeadline());
-            System.out.println(String.format("Porttt %d", msg.getServerId()));
-            reply.setServerPort(clients.get(msg.getClientId()));
-
-            reply.setPendingRequests(pendingRequeststoRemove);
-            reply.setServersInfo(servers);
-            sendMsgToLB(reply);
-
-            this.rl.unlock();
-        }
     }
 
     public void sendMsgToLB(Message msg) {

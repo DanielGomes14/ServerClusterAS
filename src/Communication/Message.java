@@ -77,6 +77,7 @@ public class Message implements Serializable {
     public  void setPendingRequests(ArrayList<Message> pending){
         this.pendingRequests = pending;
     }
+
     public  List<Message> getPendingRequests(){
         return this.pendingRequests;
     }

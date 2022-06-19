@@ -13,7 +13,6 @@ import Server.ServerInfo;
 
 public class LoadBalancer {
     
-    private ClientAux monitorCon;
     private ServerAux serverAux;
     private final int MAX_SERVER_REQUESTS = 5;
     private final int MAX_SERVER_NI= 20;
@@ -22,12 +21,10 @@ public class LoadBalancer {
     private final int monitorPort = 5000;
     private final LoadBalancerGUI gui;
     private int LBId;
-    private final ReentrantLock rl;
 
 
     public LoadBalancer() {
         this.gui = new LoadBalancerGUI(this);
-        this.rl = new ReentrantLock();
     }
 
     public void start(int port) {
@@ -38,37 +35,23 @@ public class LoadBalancer {
         this.serverAux.start();
 
         // start the connection and register in the monitor
-        this.monitorCon = new ClientAux(hostname, monitorPort, new Message(MessageTopic.LB_REGISTER, this.port));
-        this.monitorCon.start();
+        this.sendtoMonitor(new Message(MessageTopic.LB_REGISTER, this.port));
     }
 
     public void end() {
         this.gui.clearInt();
         this.serverAux.close();
         this.serverAux = null;
-        this.monitorCon = null;
     }
    
 
     public void clientRegister(Message msg) {
-        try {
-            rl.lock();
-            this.monitorCon.sendMsg(msg);
-            rl.unlock();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        this.sendtoMonitor(msg);
     }
 
     public void clientRequest(Message msg) {
         this.gui.addPendingRequest(msg);
-        try {
-            rl.lock();
-            this.monitorCon.sendMsg(msg);
-            rl.unlock();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        this.sendtoMonitor(msg);
     }
 
     public ServerInfo chooseBestServer(Message msg) {
@@ -90,7 +73,12 @@ public class LoadBalancer {
                     ( server.getActiveReq() + server.getPendingReq() ) < MAX_SERVER_REQUESTS &&
                     ( server.getNI() + msg.getNI() ) <= MAX_SERVER_NI
             ) {
-                System.out.println("wtf");
+                server.setNI(server.getNI() + msg.getNI());
+                server.setPendingReq(server.getPendingReq() + 1);
+
+                msg.getServersInfo().put(server.getServerId(), server);
+                msg.setServersInfo(msg.getServersInfo());
+
                 bestServer = server;
                 minNI = server.getNI();
             }
@@ -100,9 +88,12 @@ public class LoadBalancer {
 		return bestServer;
 	}
 
+    public  void sendtoMonitor(Message msg){
+        // start the connection and register in the monitor
+        new ClientAux(hostname, monitorPort, msg, true).start();
+    }
 
     public void sendServerRequest(Message msg, int port) {
-
         new ClientAux(hostname, port, msg,true).start();
     }
 
@@ -114,14 +105,8 @@ public class LoadBalancer {
         if (bestServer == null) {
             msg.setTopic(MessageTopic.REJECTION);
             // send to monitor rejected status
-            try {
-                rl.lock();
-                this.monitorCon.sendMsg(msg);
-                rl.unlock();
+            this.sendtoMonitor(msg);
 
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
             int clientId = msg.getClientId();
             Message reply = new Message(MessageTopic.REJECTION,msg.getRequestId(),clientId, msg.getNI(), msg.getDeadline());
             reply.setClientId(clientId);
@@ -135,27 +120,19 @@ public class LoadBalancer {
             return;
         }
 
-        System.out.println(bestServer.getServerPort());
-
-        msg.setTopic(MessageTopic.REQUEST);
-        sendServerRequest(msg, bestServer.getServerPort());
-
-        this.gui.setServerIdRequest(msg.getRequestId(), msg.getClientId(), bestServer.getServerId(), msg.getNI(), msg.getDeadline());
-
         Message msgToMonitor = new Message(MessageTopic.REQUEST_ACK, bestServer.getServerId(), bestServer.getServerPort());
         msgToMonitor.setClientId(msg.getClientId());
         msgToMonitor.setRequestId(msg.getRequestId());
         msgToMonitor.setNI(msg.getNI());
         msgToMonitor.setDeadline(msg.getDeadline());
 
-        try {
-            rl.lock();
-            this.monitorCon.sendMsg(msgToMonitor);
-            rl.lock();
+        this.sendtoMonitor(msgToMonitor);
 
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        msg.setTopic(MessageTopic.REQUEST);
+        sendServerRequest(msg, bestServer.getServerPort());
+
+        this.gui.setServerIdRequest(msg.getRequestId(), msg.getClientId(), bestServer.getServerId(), msg.getNI(), msg.getDeadline());
+
     }
 
     public void setLBId(int LBId) {
