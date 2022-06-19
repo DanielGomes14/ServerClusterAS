@@ -11,6 +11,7 @@ class TComputeRequest extends Thread{
         private final IFIFO_Server mfifo;
         private  final String PI = "3.1415926589793";
         private final Server server;
+        private boolean end;
 
         public  TComputeRequest(IFIFO_Server mfifo, Server server){
             this.mfifo = mfifo;
@@ -33,7 +34,12 @@ class TComputeRequest extends Thread{
                         server.getGui().inProcessingRequest(msg);
 
                         Message reply = calculatePI(msg);
+                        if(isEnd()) break;
+                        System.out.println("Still processing....");
+                        System.out.println(reply.getServerPort());
+
                         server.sendToClient(reply, reply.getServerPort());
+                        System.out.println("Still processing1....");
 
                         msg.setTopic(REQUEST_PROCESSED);
                         server.sendtoMonitor(msg);
@@ -62,5 +68,13 @@ class TComputeRequest extends Thread{
             StringBuilder sb = new StringBuilder(currentstr);
             sb.insert(pos, PI.charAt(pos));
             return sb.toString();
+        }
+
+        public boolean isEnd() {
+            return end;
+        }
+
+        public void setEnd(boolean end) {
+            this.end = end;
         }
 }

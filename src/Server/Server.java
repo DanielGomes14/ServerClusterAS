@@ -18,12 +18,16 @@ public class Server {
     private final String hostname = "localhost";
     private final int queueSize = 5;
     private final int numWorkers = 3;
-
+    private TComputeRequest [] activeThreads;
 
     public Server() {
         this.mFifo = new MFIFO(queueSize);
-        for (int i = 1; i <= numWorkers; i++)
-            new TComputeRequest(mFifo,this).start();
+        this.activeThreads = new TComputeRequest[numWorkers];
+        for (int i = 0; i < numWorkers; i++){
+            activeThreads[i] = new TComputeRequest(mFifo,this);
+            activeThreads[i].start();
+        }
+
         this.gui = new ServerGUI(this);
     }
 
@@ -52,6 +56,7 @@ public class Server {
                 this.gui.requestRejected(msg);
                 // Inform Monitor that the Request has been rejected
                 this.monitorCon.sendMsg(msg);
+
                 // inform also the Client
                 this.sendToClient(msg, msg.getServerPort());
             }
@@ -76,8 +81,16 @@ public class Server {
         new ClientAux(this.hostname, port, result).start();
     }
 
+    public void killThreads(){
+        for(int i=0; i < numWorkers; i++){
+            this.activeThreads[i].setEnd(true);
+            this.activeThreads[i].interrupt();
+            System.out.println("Thread interrupted");
+        }
+    }
     public void end() {
         this.serverAux.close();
+        this.killThreads();
         this.gui.end();
     }
 
