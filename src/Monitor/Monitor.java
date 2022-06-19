@@ -57,8 +57,6 @@ public class Monitor implements IMonitor, IMonitor_Heartbeat{
     public  void receiveNewRequest(Message msg){
         this.rl.lock();
 
-        this.pendingRequests.put(msg.getRequestId(), msg);
-        
         this.gui.addPendingRequest(msg);
 
         if (clients.containsKey(msg.getServerId())) {
@@ -151,12 +149,10 @@ public class Monitor implements IMonitor, IMonitor_Heartbeat{
         // add to list the pending requests
         ArrayList<Message> pendingRequeststoRemove = new ArrayList<>();
 
-        for(Message removemsg: this.pendingRequests.values()){
-            if(removemsg.getServerId() == serverId)
+        for (Message removemsg: this.pendingRequests.values()){
+            if (removemsg.getServerId() == serverId)
                 pendingRequeststoRemove.add(removemsg);
         }
-        // remove from pending requests data structure
-        for(Message msg: pendingRequeststoRemove) this.pendingRequests.remove(msg.getRequestId());
 
         serverHeartbeatThreads.remove(serverId);
 
@@ -164,13 +160,24 @@ public class Monitor implements IMonitor, IMonitor_Heartbeat{
 
         this.rl.unlock();
 
-        // add pending requests to message
-        // send message to loadbalancer
-        Message msg = new Message();
-        msg.setTopic(MessageTopic.FORWARD_PENDING);
-        msg.setPendingRequests(pendingRequeststoRemove);
+        for(Message msg: pendingRequeststoRemove) {
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            this.rl.lock();
 
-        sendMsgToLB(msg);
+            // add pending requests to message
+            // send message to loadbalancer
+            Message reply = new Message(MessageTopic.SERVERS_INFO, msg.getRequestId(), msg.getServerId(), msg.getNI(), msg.getDeadline());
+            reply.setServerPort(msg.getServerPort());
+            reply.setPendingRequests(pendingRequeststoRemove);
+            reply.setServersInfo(servers);
+            sendMsgToLB(reply);
+
+            this.rl.unlock();
+        }
     }
 
     public void sendMsgToLB(Message msg) {
@@ -229,11 +236,15 @@ public class Monitor implements IMonitor, IMonitor_Heartbeat{
     public void requestProcessed(Message msg){
         this.rl.lock();
 
-        ServerInfo server = servers.get(msg.getServerId());
-        server.setNI(server.getNI() - msg.getNI());
-        server.setActiveReq(server.getActiveReq() - 1);
+        if (servers.containsKey(msg.getServerId())) {
+            ServerInfo server = servers.get(msg.getServerId());
+            server.setNI(server.getNI() - msg.getNI());
+            server.setActiveReq(server.getActiveReq() - 1);
 
-        this.gui.requestProcessed(msg.getRequestId(), server);
+            this.gui.requestProcessed(msg.getRequestId(), server);
+        }
+
+        pendingRequests.remove(msg.getRequestId());
 
         this.rl.unlock();
     }
@@ -241,11 +252,13 @@ public class Monitor implements IMonitor, IMonitor_Heartbeat{
     public void requestInProcess(Message msg) {
         this.rl.lock();
 
-        ServerInfo server = servers.get(msg.getServerId());
-        server.setPendingReq(server.getPendingReq() - 1);
-        server.setActiveReq(server.getActiveReq() + 1);
+        if (servers.containsKey(msg.getServerId())) {
+            ServerInfo server = servers.get(msg.getServerId());
+            server.setPendingReq(server.getPendingReq() - 1);
+            server.setActiveReq(server.getActiveReq() + 1);
 
-        this.gui.requestInProcess(msg.getRequestId(), server);
+            this.gui.requestInProcess(msg.getRequestId(), server);
+        }
 
         this.rl.unlock();
     }
@@ -253,12 +266,17 @@ public class Monitor implements IMonitor, IMonitor_Heartbeat{
     public void updateServerInfo(Message msg) {
         rl.lock();
 
-        pendingRequests.remove(msg.getRequestId());
-        ServerInfo server = servers.get(msg.getServerId());
-        server.setNI(server.getNI() + msg.getNI());
-        server.setPendingReq(server.getPendingReq() + 1);
+        if (servers.containsKey(msg.getServerId())) {
+            this.pendingRequests.put(msg.getRequestId(), msg);
 
-        this.gui.updateServerInfo(server, msg.getRequestId());
+            ServerInfo server = servers.get(msg.getServerId());
+            server.setNI(server.getNI() + msg.getNI());
+            server.setPendingReq(server.getPendingReq() + 1);
+            System.out.println("antes");
+            System.out.println(msg.getNI());
+            System.out.println(server.getNI());
+            this.gui.updateServerInfo(server, msg.getRequestId());
+        }
 
         rl.unlock();
     }
@@ -266,7 +284,8 @@ public class Monitor implements IMonitor, IMonitor_Heartbeat{
     public void requestRejected(Message msg){
         this.rl.lock();
 
-        pendingRequests.remove(msg.getRequestId());
+        if (pendingRequests.containsKey(msg.getRequestId()))
+            pendingRequests.remove(msg.getRequestId());
 
         this.gui.requestRejected(msg);
 

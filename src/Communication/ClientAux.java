@@ -51,6 +51,8 @@ public class ClientAux extends Thread {
 
     public void sendMsg(Message msg) throws IOException {
         out.writeObject(msg);
+        out.flush();
+        out.reset();
     }
 
     public void close() {

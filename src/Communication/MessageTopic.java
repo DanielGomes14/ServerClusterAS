@@ -1,8 +1,6 @@
 package Communication;
 
 public class MessageTopic {
-
-
     public static final int REQUEST = 1;
     public static final int REPLY = 2;
     public static final int REJECTION = 3;
@@ -17,6 +15,4 @@ public class MessageTopic {
     public static  final int FORWARD_PENDING = 13;
     public static  final int REQUEST_ACK = 14;
     public static final int REQUEST_IN_PROCESS = 15;
-
-
 }

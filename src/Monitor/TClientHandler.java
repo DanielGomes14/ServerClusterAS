@@ -3,9 +3,7 @@ package Monitor;
 import Communication.ClientAux;
 import Communication.Message;
 import Communication.MessageTopic;
-import Server.ServerInfo;
 
-import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
@@ -57,6 +55,7 @@ public class TClientHandler extends Thread {
                                     hostname,
                                     msg.getServerPort(),
                                     this.monitor.registerNewServer(msg.getServerPort())).start();
+                            break;
                         case MessageTopic.REQUEST_PROCESSED:
                             this.monitor.requestProcessed(msg);
                             break;
@@ -72,12 +71,11 @@ public class TClientHandler extends Thread {
                         case MessageTopic.REJECTION:
                             this.monitor.requestRejected(msg);
                             break;
+                        default:
+                            break;
                     }
-                    // client requests
-                    // monitor heartbeat
-                    // monitor forward requests to servers
-
                 } catch (Exception e) {
+                    e.printStackTrace();
                     break;
                 }
             }
@@ -92,14 +90,6 @@ public class TClientHandler extends Thread {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-        }
-    }
-
-    public void sendMsg(Message msg) {
-        try {
-            out.writeObject(msg);
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 }

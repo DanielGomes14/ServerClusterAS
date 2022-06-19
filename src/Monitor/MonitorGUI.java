@@ -57,7 +57,7 @@ public class MonitorGUI {
         tableModel1.addColumn("Status");
         tableModel2.addColumn("Id");
         tableModel2.addColumn("Port");
-        tableModel2.addColumn("LB");
+        tableModel2.addColumn("Primary");
         tableModel2.addColumn("Status");
         tableModel3.addColumn("Id");
         tableModel3.addColumn("Client Id");
@@ -107,6 +107,7 @@ public class MonitorGUI {
                 Object[] obj = new Object[]{
                         msg.getServerId(), msg.getServerPort(), 0, 0, 0, "UP"
                 };
+
                 this.tableRows1.put(msg.getServerId(), tableModel1.getRowCount());
 
                 tableModel1.addRow(obj);
@@ -120,7 +121,7 @@ public class MonitorGUI {
         try {
             queue.invokeAndWait(() -> {
                 if (tableRows1.containsKey(searchedId))
-                    tableModel1.setValueAt("DOWN", tableRows1.get(searchedId), 3);
+                    tableModel1.setValueAt("DOWN", tableRows1.get(searchedId), 5);
             });
         } catch (Exception e) {
             e.printStackTrace();
@@ -186,6 +187,8 @@ public class MonitorGUI {
                     tableModel3.setValueAt(server.getServerId(), tableRows3.get(requestId), 4);
                 }
                 if (tableRows1.containsKey(server.getServerId())) {
+                    System.out.println("adsdas");
+                    System.out.println(server.getNI());
                     tableModel1.setValueAt(server.getNI(), tableRows1.get(server.getServerId()), 2);
                     tableModel1.setValueAt(server.getPendingReq(), tableRows1.get(server.getServerId()), 3);
                     tableModel1.setValueAt(server.getActiveReq(), tableRows1.get(server.getServerId()), 4);

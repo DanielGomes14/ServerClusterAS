@@ -38,6 +38,7 @@ public class TClientHandler extends Thread {
                     switch ((msg.getTopic())) {
                         case MessageTopic.REQUEST:
                             this.server.processRequest(msg);
+                            break;
                         case MessageTopic.SERVER_REGISTER:
                             this.server.setServerId(msg.getServerId());
                             break;

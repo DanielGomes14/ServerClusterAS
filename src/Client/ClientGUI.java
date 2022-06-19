@@ -98,6 +98,28 @@ public class ClientGUI {
         });
     }
 
+    public void end() {
+        nRequests.setValue(1);
+        NI.setValue(1);
+        deadline.setValue(5);
+
+        tableModel0 = new DefaultTableModel();
+        tableModel1 = new DefaultTableModel();
+        tableModel0.addColumn("Id");
+        tableModel0.addColumn("NI");
+        tableModel0.addColumn("Deadline");
+
+        tableModel1.addColumn("Id");
+        tableModel1.addColumn("Server Id");
+        tableModel1.addColumn("NI");
+        tableModel1.addColumn("Deadline");
+        tableModel1.addColumn("PI");
+        tableModel1.addColumn("Status");
+
+        pendingRequestsTable.setModel(tableModel0);
+        processedRequestsTable.setModel(tableModel1);
+    }
+
     public void addReply(Message msg) {
         try {
             queue.invokeAndWait(() -> {

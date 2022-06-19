@@ -30,6 +30,7 @@ public class Client {
 
     public void end() {
         this.serverAux.close();
+        this.gui.end();
     }
 
     public ClientGUI getGui() {
@@ -42,6 +43,11 @@ public class Client {
 
     public void sendRequest(int nRequests, int NI, int deadline) throws IOException {
         for (int i=0; i<nRequests; i++) {
+            try {
+                Thread.sleep(200);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             Message request = new Message(
                     MessageTopic.REQUEST,
                     1000*clientId+(this.nRequests++),

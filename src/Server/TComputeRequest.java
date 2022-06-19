@@ -34,9 +34,11 @@ class TComputeRequest extends Thread{
 
                         Message reply = calculatePI(msg);
                         server.sendToClient(reply, reply.getServerPort());
-                        reply.setTopic(REQUEST_PROCESSED);
-                        server.getGui().addReply(reply);
+
+                        msg.setTopic(REQUEST_PROCESSED);
                         server.sendtoMonitor(msg);
+
+                        server.getGui().addReply(reply);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -49,21 +51,16 @@ class TComputeRequest extends Thread{
                 for(int i = 1; i<=msg.getNI(); i++){
                     base = addDecimalPlace(base,i+1);
                 }
-                Thread.sleep(msg.getNI() * 1000);
-                msg.setTopic(REPLY);
-                msg.setPi(Double.parseDouble(base));
-                return msg;
+                Message reply = new Message(REPLY, msg.getRequestId(), msg.getServerId(), msg.getNI(), msg.getDeadline());
+                Thread.sleep(reply.getNI() * 2000);
+                reply.setServerPort(msg.getServerPort());
+                reply.setPi(Double.parseDouble(base));
+                return reply;
         }
 
         public  String addDecimalPlace(String currentstr, int pos ){
-
             StringBuilder sb = new StringBuilder(currentstr);
             sb.insert(pos, PI.charAt(pos));
             return sb.toString();
         }
-
-
-
-
-
 }

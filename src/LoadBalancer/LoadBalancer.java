@@ -14,7 +14,7 @@ public class LoadBalancer {
     
     private ClientAux monitorCon;
     private ServerAux serverAux;
-    private final int MAX_SERVER_REQUESTS= 5;
+    private final int MAX_SERVER_REQUESTS = 5;
     private final int MAX_SERVER_NI= 20;
     private final String hostname = "localhost";
     private int port;
@@ -39,6 +39,7 @@ public class LoadBalancer {
     }
 
     public void end() {
+        this.gui.clearInt();
         this.serverAux.close();
         this.serverAux = null;
         this.monitorCon = null;
@@ -68,14 +69,24 @@ public class LoadBalancer {
 
         // get the server with the lowest NI and
         for (ServerInfo server : msg.getServersInfo().values()) {
+            System.out.println(String.format("soma: %d", server.getActiveReq() + server.getPendingReq()));
+            System.out.println(String.format("ACTIVe: %d", server.getActiveReq()));
+            System.out.println(String.format("getPendingReq: %d", server.getPendingReq()));
+            System.out.println(minNI > server.getNI() &&
+                    ( server.getActiveReq() + server.getPendingReq() ) < MAX_SERVER_REQUESTS &&
+                    ( server.getNI() + msg.getNI() ) <= MAX_SERVER_NI);
+
             if (
                     minNI > server.getNI() &&
-                    ( server.getActiveReq() + server.getPendingReq() ) <= MAX_SERVER_REQUESTS
-                    && server.getNI() + msg.getNI() < MAX_SERVER_NI
+                    ( server.getActiveReq() + server.getPendingReq() ) < MAX_SERVER_REQUESTS &&
+                    ( server.getNI() + msg.getNI() ) <= MAX_SERVER_NI
             ) {
+                System.out.println("wtf");
                 bestServer = server;
+                minNI = server.getNI();
             }
         }
+        System.out.println(bestServer);
 
 		return bestServer;
 	}
@@ -99,8 +110,12 @@ public class LoadBalancer {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+            int clientId = msg.getServerId();
             msg.setServerId(-1);
-            this.gui.setServerIdRequest(msg.getRequestId(), bestServer.getServerId());
+
+            System.out.println("AQUISADIQIWE");
+
+            this.gui.setServerIdRequest(msg.getRequestId(), clientId, -1, msg.getNI(), msg.getDeadline());
             // send to client rejected status
             sendServerRequest(msg, msg.getServerPort());
             return;
@@ -111,10 +126,11 @@ public class LoadBalancer {
         msg.setTopic(MessageTopic.REQUEST);
         sendServerRequest(msg, bestServer.getServerPort());
 
-        this.gui.setServerIdRequest(msg.getRequestId(), bestServer.getServerId());
+        this.gui.setServerIdRequest(msg.getRequestId(), msg.getServerId(), bestServer.getServerId(), msg.getNI(), msg.getDeadline());
 
         Message msgToMonitor = new Message(MessageTopic.REQUEST_ACK, bestServer.getServerId(), bestServer.getServerPort());
         msgToMonitor.setRequestId(msg.getRequestId());
+        msgToMonitor.setNI(msg.getNI());
 
         try {
             this.monitorCon.sendMsg(msgToMonitor);

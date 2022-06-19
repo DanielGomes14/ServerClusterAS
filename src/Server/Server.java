@@ -48,7 +48,6 @@ public class Server {
     public void processRequest(Message msg) {
         if (this.mFifo.isFull() || !this.mFifo.checkNICounter(msg.getNI())) {
             msg.setTopic(MessageTopic.REJECTION);
-
             try{
                 this.gui.requestRejected(msg);
                 // Inform Monitor that the Request has been rejected
@@ -59,10 +58,10 @@ public class Server {
             catch (IOException e){
                 e.printStackTrace();
             }
-
+        } else {
+            this.mFifo.put(msg);
+            this.gui.addPendingRequest(msg);
         }
-        this.mFifo.put(msg);
-        this.gui.addPendingRequest(msg);
     }
 
     public  void sendtoMonitor(Message msg){
@@ -79,6 +78,7 @@ public class Server {
 
     public void end() {
         this.serverAux.close();
+        this.gui.end();
     }
 
     public int getServerId() {

@@ -81,6 +81,20 @@ public class LoadBalancerGUI {
         }
     }
 
+    public void clearInt() {
+        tableRows0 = new HashMap<>();
+
+        tableModel0 = new DefaultTableModel();
+
+        tableModel0.addColumn("Id");
+        tableModel0.addColumn("Client Id");
+        tableModel0.addColumn("NI");
+        tableModel0.addColumn("Deadline");
+        tableModel0.addColumn("Server Id");
+
+        requestsTable.setModel(tableModel0);
+    }
+
     public void setLBId(int id) {
         try {
             queue.invokeAndWait(() -> {
@@ -91,9 +105,13 @@ public class LoadBalancerGUI {
         }
     }
 
-    public void setServerIdRequest(int requestId, int serverId) {
+    public void setServerIdRequest(int requestId, int clientId, int serverId, int NI, int deadline) {
         try {
             queue.invokeAndWait(() -> {
+                if (!tableRows0.containsKey(requestId)) {
+                    this.tableRows0.put(requestId, tableModel0.getRowCount());
+                    tableModel0.addRow(new Object[]{requestId, clientId, NI, deadline, "NONE"});
+                }
                 if (serverId != -1) {
                     tableModel0.setValueAt(serverId, tableRows0.get(requestId), 4);
                 } else {

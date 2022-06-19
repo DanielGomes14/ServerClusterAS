@@ -80,6 +80,30 @@ public class ServerGUI {
         });
     }
 
+    public void end() {
+        tableRows0 = new HashMap<>();
+
+        tableModel0 = new DefaultTableModel();
+        tableModel1 = new DefaultTableModel();
+
+        tableModel0.addColumn("Id");
+        tableModel0.addColumn("Client Id");
+        tableModel0.addColumn("NI");
+        tableModel0.addColumn("Deadline");
+        tableModel0.addColumn("Status");
+
+        tableModel1.addColumn("Id");
+        tableModel1.addColumn("Client Id");
+        tableModel1.addColumn("NI");
+        tableModel1.addColumn("Deadline");
+        tableModel1.addColumn("PI");
+        tableModel1.addColumn("Status");
+
+        requestsTable.setModel(tableModel0);
+        repliesTable.setModel(tableModel1);
+        repliesTable.updateUI();
+    }
+
     public void setServerPort(int port) {
         try {
             queue.invokeAndWait(() -> {
