@@ -35,11 +35,7 @@ class TComputeRequest extends Thread{
 
                         Message reply = calculatePI(msg);
                         if(isEnd()) break;
-                        System.out.println("Still processing....");
-                        System.out.println(reply.getServerPort());
-
                         server.sendToClient(reply, reply.getServerPort());
-                        System.out.println("Still processing1....");
 
                         msg.setTopic(REQUEST_PROCESSED);
                         server.sendtoMonitor(msg);

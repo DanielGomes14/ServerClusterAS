@@ -72,7 +72,6 @@ public class Server {
         for(int i=0; i < numWorkers; i++){
             this.activeThreads[i].setEnd(true);
             this.activeThreads[i].interrupt();
-            System.out.println("Thread interrupted");
         }
     }
     public void end() {

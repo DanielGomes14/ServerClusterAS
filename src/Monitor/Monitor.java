@@ -74,7 +74,6 @@ public class Monitor implements IMonitor, IMonitor_Heartbeat{
 
         this.rl.lock();
 
-        System.out.println(this.LBs.size());
         if (this.LBs.size() <= 2) {
             id = this.LBCount++;
 

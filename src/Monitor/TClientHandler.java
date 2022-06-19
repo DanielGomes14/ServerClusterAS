@@ -31,7 +31,6 @@ public class TClientHandler extends Thread {
             while (true) {
                 try {
                     msg = (Message) in.readObject();
-                    System.out.println(msg.getTopic());
                     switch ((msg.getTopic())) {
                         case MessageTopic.REQUEST:
                             // receive request from a client

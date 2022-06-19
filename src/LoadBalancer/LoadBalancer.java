@@ -60,11 +60,6 @@ public class LoadBalancer {
 
         // get the server with the lowest NI and
         for (ServerInfo server : msg.getServersInfo().values()) {
-            System.out.println(String.format("Server Id: %d", server.getServerId()));
-            System.out.println(String.format("soma: %d", server.getActiveReq() + server.getPendingReq()));
-            System.out.println(String.format("ACTIVe: %d", server.getActiveReq()));
-            System.out.println(String.format("getPendingReq: %d", server.getPendingReq()));
-            System.out.println(minNI > server.getNI() &&
                     ( server.getActiveReq() + server.getPendingReq() ) < MAX_SERVER_REQUESTS &&
                     ( server.getNI() + msg.getNI() ) <= MAX_SERVER_NI);
 
@@ -83,7 +78,6 @@ public class LoadBalancer {
                 minNI = server.getNI();
             }
         }
-        System.out.println(bestServer);
 
 		return bestServer;
 	}
@@ -111,7 +105,6 @@ public class LoadBalancer {
             Message reply = new Message(MessageTopic.REJECTION,msg.getRequestId(),clientId, msg.getNI(), msg.getDeadline());
             reply.setClientId(clientId);
             reply.setServerPort(msg.getServerPort());
-            System.out.println("AQUISADIQIWE");
 
             this.gui.setServerIdRequest(reply.getRequestId(), clientId, -1, reply.getNI(), reply.getDeadline());
             // send to client rejected status

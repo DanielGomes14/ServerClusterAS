@@ -187,8 +187,6 @@ public class MonitorGUI {
                     tableModel3.setValueAt(server.getServerId(), tableRows3.get(requestId), 4);
                 }
                 if (tableRows1.containsKey(server.getServerId())) {
-                    System.out.println("adsdas");
-                    System.out.println(server.getNI());
                     tableModel1.setValueAt(server.getNI(), tableRows1.get(server.getServerId()), 2);
                     tableModel1.setValueAt(server.getPendingReq(), tableRows1.get(server.getServerId()), 3);
                     tableModel1.setValueAt(server.getActiveReq(), tableRows1.get(server.getServerId()), 4);

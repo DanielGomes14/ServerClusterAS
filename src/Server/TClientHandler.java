@@ -33,8 +33,6 @@ public class TClientHandler extends Thread {
             while (true) {
                 try {
                     msg = (Message) in.readObject();
-                    if (msg.getTopic() != 4)
-                        System.out.println(msg.getTopic());
                     switch ((msg.getTopic())) {
                         case MessageTopic.REQUEST:
                             this.server.processRequest(msg);

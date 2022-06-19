@@ -35,8 +35,6 @@ public class TClientHandler extends Thread {
             while (true) {
                 try {
                     msg = (Message) in.readObject();
-                    if (msg.getTopic() != 4)
-                        System.out.println(msg.getTopic());
                     switch (msg.getTopic()){
                         case MessageTopic.LB_REGISTER:
                             this.lb.setLBId(msg.getServerId());
@@ -54,7 +52,6 @@ public class TClientHandler extends Thread {
                             this.lb.forwardMessageToServer(msg);
                             break;
                         case MessageTopic.FORWARD_PENDING:
-                            System.out.println("aqui");
                             for(Message m: msg.getPendingRequests()){
                                 System.out.println(msg.getServersInfo().size());
                                 m.setServersInfo(msg.getServersInfo());
