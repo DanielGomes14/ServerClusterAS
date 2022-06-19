@@ -15,19 +15,28 @@ public class ClientAux extends Thread {
     private ObjectInputStream in = null;
     private ObjectOutputStream out = null;
     private final Message firstMessage;
-
+    private boolean shouldClose;
     public ClientAux(String serverHostName, int serverPort) {
         this.serverHostName = serverHostName;
         this.serverPort = serverPort;
         this.firstMessage = null;
+        this.shouldClose = false;
     }
 
     public ClientAux(String serverHostName, int serverPort, Message firstMessage) {
         this.serverHostName = serverHostName;
         this.serverPort = serverPort;
         this.firstMessage = firstMessage;
+        this.shouldClose = false;
     }
 
+
+    public ClientAux(String serverHostName, int serverPort, Message firstMessage, boolean shouldClose) {
+        this.serverHostName = serverHostName;
+        this.serverPort = serverPort;
+        this.firstMessage = firstMessage;
+        this.shouldClose = shouldClose;
+    }
     public void run() {
         this.startConnection();
     }
@@ -41,8 +50,11 @@ public class ClientAux extends Thread {
             // get the input stream of the client
             in = new ObjectInputStream(clientSocket.getInputStream());
 
-            if (firstMessage != null)
+            if (firstMessage != null){
                 sendMsg(firstMessage);
+                if(shouldClose) this.close();
+            }
+
 
         } catch (IOException e) {
             e.printStackTrace();

@@ -128,7 +128,7 @@ public class ServerGUI {
         try {
             queue.invokeAndWait(() -> {
                 this.tableRows0.put(msg.getRequestId(), tableModel0.getRowCount());
-                tableModel0.addRow(new Object[]{msg.getRequestId(), msg.getServerId(), msg.getNI(), msg.getDeadline(), "PENDING"});
+                tableModel0.addRow(new Object[]{msg.getRequestId(), msg.getClientId(), msg.getNI(), msg.getDeadline(), "PENDING"});
             });
         } catch (Exception e) {
             e.printStackTrace();
@@ -153,7 +153,7 @@ public class ServerGUI {
                 if (tableRows0.containsKey(msg.getRequestId()))
                     this.tableModel0.setValueAt("PROCESSED", tableRows0.get(msg.getRequestId()), 4);
 
-                tableModel1.addRow(new Object[]{msg.getRequestId(), msg.getServerId(), msg.getNI(), msg.getDeadline(), msg.getPi(), "PROCESSED"});
+                tableModel1.addRow(new Object[]{msg.getRequestId(), msg.getClientId(), msg.getNI(), msg.getDeadline(), msg.getPi(), "PROCESSED"});
             });
         } catch (Exception e) {
             e.printStackTrace();

@@ -59,10 +59,9 @@ public class Monitor implements IMonitor, IMonitor_Heartbeat{
 
         this.gui.addPendingRequest(msg);
 
-        if (clients.containsKey(msg.getServerId())) {
-            msg.setServerPort(clients.get(msg.getServerId()));
+        if (clients.containsKey(msg.getClientId())) {
+            msg.setServerPort(clients.get(msg.getClientId()));
         }
-
         this.rl.unlock();
     }
 
@@ -134,7 +133,7 @@ public class Monitor implements IMonitor, IMonitor_Heartbeat{
 
         this.rl.unlock();
 
-        msg.setServerId(id);
+        msg.setClientId(id);
         msg.setTopic(MessageTopic.CLIENT_REGISTER_ACCEPTED);
 
         this.gui.registerClient(msg);
@@ -160,6 +159,9 @@ public class Monitor implements IMonitor, IMonitor_Heartbeat{
 
         this.rl.unlock();
 
+        // maybe check if the only server dies during processing, inform client of rejection because
+        // at the moment it wont receive any reply
+
         for(Message msg: pendingRequeststoRemove) {
             try {
                 Thread.sleep(100);
@@ -170,8 +172,11 @@ public class Monitor implements IMonitor, IMonitor_Heartbeat{
 
             // add pending requests to message
             // send message to loadbalancer
+            System.out.println(String.format("Deadline %d %d",msg.getDeadline(), msg.getNI(),msg.getServerPort()));
             Message reply = new Message(MessageTopic.SERVERS_INFO, msg.getRequestId(), msg.getServerId(), msg.getNI(), msg.getDeadline());
-            reply.setServerPort(msg.getServerPort());
+            System.out.println(String.format("Porttt %d", msg.getServerId()));
+            reply.setServerPort(clients.get(msg.getClientId()));
+
             reply.setPendingRequests(pendingRequeststoRemove);
             reply.setServersInfo(servers);
             sendMsgToLB(reply);
@@ -272,9 +277,6 @@ public class Monitor implements IMonitor, IMonitor_Heartbeat{
             ServerInfo server = servers.get(msg.getServerId());
             server.setNI(server.getNI() + msg.getNI());
             server.setPendingReq(server.getPendingReq() + 1);
-            System.out.println("antes");
-            System.out.println(msg.getNI());
-            System.out.println(server.getNI());
             this.gui.updateServerInfo(server, msg.getRequestId());
         }
 

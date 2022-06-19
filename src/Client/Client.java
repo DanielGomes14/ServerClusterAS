@@ -54,6 +54,7 @@ public class Client {
                     this.clientId,
                     NI,
                     deadline);
+            request.setClientId(this.clientId);
             this.clientAux.sendMsg(request);
             this.gui.addPendingRequest(request);
         }

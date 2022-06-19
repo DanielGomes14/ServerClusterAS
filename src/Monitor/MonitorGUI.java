@@ -77,7 +77,7 @@ public class MonitorGUI {
             queue.invokeAndWait(() -> {
 
                 Object[] obj = new Object[]{
-                        msg.getServerId(), msg.getServerPort()
+                        msg.getClientId(), msg.getServerPort()
                 };
 
                 tableModel0.addRow(obj);
@@ -90,7 +90,7 @@ public class MonitorGUI {
     public void addPendingRequest(Message msg) {
         try {
             queue.invokeAndWait(() -> {
-                Object[] obj = new Object[]{msg.getRequestId(), msg.getServerId(), msg.getNI(), msg.getDeadline(), "NONE", "PENDING"};
+                Object[] obj = new Object[]{msg.getRequestId(), msg.getClientId(), msg.getNI(), msg.getDeadline(), "NONE", "PENDING"};
                 this.tableRows3.put(msg.getRequestId(), tableModel3.getRowCount());
 
                 tableModel3.addRow(obj);

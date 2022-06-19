@@ -14,24 +14,28 @@ public class Server {
     private int serverId;
     private  ClientAux monitorCon;
     private final int monitorPort = 5000;
-    private final IFIFO_Server mFifo;
+    private IFIFO_Server mFifo;
     private final String hostname = "localhost";
     private final int queueSize = 5;
     private final int numWorkers = 3;
     private TComputeRequest [] activeThreads;
 
     public Server() {
-        this.mFifo = new MFIFO(queueSize);
-        this.activeThreads = new TComputeRequest[numWorkers];
-        for (int i = 0; i < numWorkers; i++){
-            activeThreads[i] = new TComputeRequest(mFifo,this);
-            activeThreads[i].start();
-        }
-
         this.gui = new ServerGUI(this);
     }
 
-    public void start() {
+    public void start()  {
+        this.mFifo = new MFIFO(queueSize);
+        this.activeThreads = new TComputeRequest[numWorkers];
+        for (int i = 0; i < numWorkers; i++){
+            this.activeThreads[i] = new TComputeRequest(mFifo,this);
+            this.activeThreads[i].start();
+        }
+        try {
+            Thread.sleep(100);
+
+        }catch (InterruptedException ignored) {
+        }
         this.serverAux = new ServerAux(this, this.hostname, this.monitorPort);
         this.serverAux.start();
     }
@@ -72,13 +76,14 @@ public class Server {
     public  void sendtoMonitor(Message msg){
         try {
             this.monitorCon.sendMsg(msg);
+
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
     public void sendToClient(Message result, int port) {
-        new ClientAux(this.hostname, port, result).start();
+        new ClientAux(this.hostname, port, result,true).start();
     }
 
     public void killThreads(){

@@ -74,7 +74,7 @@ public class LoadBalancerGUI {
         try {
             queue.invokeAndWait(() -> {
                 this.tableRows0.put(msg.getRequestId(), tableModel0.getRowCount());
-                tableModel0.addRow(new Object[]{msg.getRequestId(), msg.getServerId(), msg.getNI(), msg.getDeadline(), "NONE"});
+                tableModel0.addRow(new Object[]{msg.getRequestId(), msg.getClientId(), msg.getNI(), msg.getDeadline(), "NONE"});
             });
         } catch (Exception e) {
             e.printStackTrace();

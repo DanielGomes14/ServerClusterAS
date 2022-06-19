@@ -34,7 +34,7 @@ public class TClientHandler extends Thread {
                     switch (msg.getTopic()) {
                         case MessageTopic.CLIENT_REGISTER_ACCEPTED:
                             System.out.println(msg.getServerId());
-                            this.client.setClientId(msg.getServerId());
+                            this.client.setClientId(msg.getClientId());
                             break;
                         case MessageTopic.REPLY:
                             this.client.getGui().addReply(msg);

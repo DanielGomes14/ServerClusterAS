@@ -14,6 +14,7 @@ public class Message implements Serializable {
 
     private int serverId;
 
+    private int clientId;
     private int serverPort;
 
     /**  Number of iterations */
@@ -126,5 +127,13 @@ public class Message implements Serializable {
 
     public void setDeadline(int deadline) {
         this.deadline = deadline;
+    }
+
+    public int getClientId() {
+        return clientId;
+    }
+
+    public void setClientId(int clientId) {
+        this.clientId = clientId;
     }
 }

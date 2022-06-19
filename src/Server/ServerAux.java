@@ -32,9 +32,8 @@ public class ServerAux extends Thread  {
             this.port = serverSocket.getLocalPort();
             this.server.getGui().setServerPort(this.port);
 
-            this.server.setMonitorCon(new ClientAux(
-                    this.hostname, this.monitorPort, new Message(MessageTopic.SERVER_REGISTER, this.port)));
-            this.server.getMonitorCon().start();
+            new ClientAux(
+                    this.hostname, this.monitorPort, new Message(MessageTopic.SERVER_REGISTER, this.port),true).start();
 
             // running infinite loop for getting
             // client request

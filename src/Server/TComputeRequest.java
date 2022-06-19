@@ -58,6 +58,7 @@ class TComputeRequest extends Thread{
                     base = addDecimalPlace(base,i+1);
                 }
                 Message reply = new Message(REPLY, msg.getRequestId(), msg.getServerId(), msg.getNI(), msg.getDeadline());
+                reply.setClientId(msg.getClientId());
                 Thread.sleep(reply.getNI() * 2000);
                 reply.setServerPort(msg.getServerPort());
                 reply.setPi(Double.parseDouble(base));
